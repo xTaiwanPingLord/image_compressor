@@ -63,6 +63,12 @@ enum Cmd {
         shopee_max: usize,
         #[arg(long, default_value_t = 18)]
         momo_max: usize,
+        /// Shopee 輸出最大寬度（0 = 不限制）
+        #[arg(long, default_value_t = 2000)]
+        shopee_max_width: u32,
+        /// momo 詳情圖尾段低於此高度時從前一段挪高度（0 = 保持實際高度）
+        #[arg(long, default_value_t = 300)]
+        momo_min_last: u32,
         /// 智慧切點（切段處往上 150px 找最接近純色的橫列）
         #[arg(long)]
         smart_cut: bool,
@@ -215,6 +221,8 @@ fn main() -> ExitCode {
             pad,
             shopee_max,
             momo_max,
+            shopee_max_width,
+            momo_min_last,
             smart_cut,
             out,
             keep_order,
@@ -272,6 +280,8 @@ fn main() -> ExitCode {
                     shopee_max_desc: shopee_max,
                     momo_max_desc: momo_max,
                     smart_cut,
+                    shopee_max_width,
+                    momo_min_last,
                     ..Settings::default()
                 },
                 output_root: out,

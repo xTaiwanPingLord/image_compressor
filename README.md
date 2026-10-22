@@ -26,6 +26,8 @@ imgc ecommerce --name 223_ssd --main 主圖資料夾 --variant 規格_1.jpg --de
 | `--fit pad\|crop` | 主圖/選項圖比例不符時的預設處理（預設補白） |
 | `--crop 檔名 …` / `--pad 檔名 …` | 個別圖片改用裁切或補白 |
 | `--shopee-max 12` / `--momo-max 18` | 詳情圖最多張數（momo 上限 20） |
+| `--shopee-max-width 2000` | Shopee 輸出最大寬度，0 = 不限制 |
+| `--momo-min-last 300` | momo 詳情圖尾段低於此高度時從前一段挪高度，0 = 保持實際高度 |
 | `--smart-cut` | 切段處往上 150px 找最接近純色的橫列下刀 |
 | `--out 路徑` | 輸出根目錄（預設：三區合計圖片最多的來源資料夾） |
 | `--dry-run` | 只預檢與壓縮，不寫檔 |

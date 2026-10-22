@@ -65,6 +65,10 @@ pub struct Settings {
     pub momo_min_quality: u8,
     /// 起始（最高）品質
     pub max_quality: u8,
+    /// Shopee 輸出最大寬度（0 = 不限制）
+    pub shopee_max_width: u32,
+    /// momo 詳情圖最後一段低於此高度時從前一段挪高度（0 = 保持實際高度）
+    pub momo_min_last: u32,
 }
 
 impl Default for Settings {
@@ -76,6 +80,8 @@ impl Default for Settings {
             shopee_min_quality: 60,
             momo_min_quality: 10,
             max_quality: 92,
+            shopee_max_width: 2000,
+            momo_min_last: detail::MOMO_DEFAULT_MIN_LAST,
         }
     }
 }
@@ -201,6 +207,15 @@ fn validate(job: &Job) -> Result<()> {
     {
         return Err(Error::Invalid("品質設定不合理".into()));
     }
+    if s.shopee_max_width != 0 && s.shopee_max_width < detail::SHOPEE_UPSCALE_WIDTH {
+        return Err(Error::Invalid(format!(
+            "Shopee 最大寬度需為 0（不限制）或 ≥ {}",
+            detail::SHOPEE_UPSCALE_WIDTH
+        )));
+    }
+    if s.momo_min_last >= detail::MOMO_SEG_HEIGHT {
+        return Err(Error::Invalid("momo 尾段最小高度需小於 1500".into()));
+    }
     Ok(())
 }
 
@@ -299,6 +314,14 @@ pub fn prepare(job: &Job) -> Result<Prepared> {
                         geom::resize(&sq, MOMO_MAIN_SIZE, MOMO_MAIN_SIZE)
                     }
                 };
+                let out = match pf {
+                    Platform::Shopee
+                        if s.shopee_max_width > 0 && out.width() > s.shopee_max_width =>
+                    {
+                        geom::resize_to_width(&out, s.shopee_max_width)
+                    }
+                    _ => out,
+                };
                 pieces.push(Piece {
                     platform: pf,
                     category: cat,
@@ -312,8 +335,8 @@ pub fn prepare(job: &Job) -> Result<Prepared> {
 
         if !descs.is_empty() {
             let laid = match pf {
-                Platform::Shopee => detail::shopee_layout(&descs, s.smart_cut),
-                Platform::Momo => detail::momo_layout(&descs, s.smart_cut),
+                Platform::Shopee => detail::shopee_layout(&descs, s.smart_cut, s.shopee_max_width),
+                Platform::Momo => detail::momo_layout(&descs, s.smart_cut, s.momo_min_last),
             };
             let limit = match pf {
                 Platform::Shopee => s.shopee_max_desc,
