@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Continue'
 $root = $PSScriptRoot
 $log = Join-Path $root 'build_windows.log'
 $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
-function Log($m) { $m | Tee-Object -FilePath $log -Append }
+function Log($m) { Write-Host $m; Add-Content -Path $log -Value $m -Encoding utf8 }
 Remove-Item $log -ErrorAction SilentlyContinue
 
 $dev = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' -ErrorAction SilentlyContinue).AllowDevelopmentWithoutDevLicense

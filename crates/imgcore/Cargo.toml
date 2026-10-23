@@ -6,14 +6,21 @@ rust-version = "1.88"
 
 [dependencies]
 fast_image_resize = "6.1.0"
+filetime = "0.2"
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp", "bmp", "tiff", "gif"] }
+libc = "0.2"
 mozjpeg = "0.10.13"
+mozjpeg-sys = { version = "2.2.3", default-features = false, features = ["unwinding", "nasm_simd", "parallel"] }
+oxipng = { version = "10", default-features = false, features = ["parallel", "zopfli", "filetime"] }
+png = "0.18"
 qcms = "0.3.0"
+quantizr = "1"
 rayon = "1.12.0"
 regex = "1.13.1"
 serde = { version = "1.0.229", features = ["derive"] }
 thiserror = "2.0.21"
 trash = { version = "5.2.9", optional = true }
+webp = "0.3"
 
 [dev-dependencies]
 tempfile = "3"

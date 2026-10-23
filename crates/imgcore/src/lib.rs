@@ -1,14 +1,17 @@
 //! image_compressor 影像核心。
 //!
-//! 第一階段：電商模式（Shopee / momo）完整流程；普通模式於第三階段加入。
+//! 電商模式（Shopee / momo）與普通模式（對照 Caesium）。
 
 pub mod cleanup;
 pub mod detail;
 pub mod ecommerce;
 pub mod encode;
+pub mod exif;
 pub mod geom;
+pub mod jpeg_lossless;
 pub mod load;
 pub mod natsort;
+pub mod normal;
 
 pub use image::RgbImage;
 

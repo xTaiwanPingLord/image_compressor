@@ -4,7 +4,7 @@
 
 | 目錄 | 內容 |
 |---|---|
-| `crates/imgcore` | Rust 影像核心（電商模式：Shopee / momo） |
+| `crates/imgcore` | Rust 影像核心：電商模式（Shopee / momo）、普通模式（對照 Caesium） |
 | `crates/cli` | 命令列工具 `imgc` |
 | `app/` | Flutter 桌面 / 行動 App；`app/rust` 以 flutter_rust_bridge 包裝 imgcore |
 
@@ -25,6 +25,17 @@ cargo build --release # 產生 target\release\imgc.exe
 ```
 
 ## 用法
+
+### 普通模式
+
+```
+imgc compress 圖片或資料夾… [-q 80] [--lossless] [--max-kb 500] [--format same|jpeg|png|webp]
+              [--long-edge 1920] [--out 資料夾] [--suffix _compressed] [--strip]
+```
+
+資料夾會含子資料夾；指定 `--out` 時保留資料夾結構。App 內有完整設定（壓縮 / 縮放 / 輸出）與即時預覽。
+
+### 電商模式
 
 ```
 imgc info 商品_1.png 商品_2.jpg

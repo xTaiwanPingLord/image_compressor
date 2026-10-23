@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1625179056;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 352396021;
 
 // Section: executor
 
@@ -77,6 +77,69 @@ fn wire__crate__api__files__collect_images_impl(
                     std::result::Result::Ok(output_ok)
                 })())
             }
+        },
+    )
+}
+fn wire__crate__api__normal__collect_images_recursive_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "collect_images_recursive",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_paths = <Vec<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok =
+                        Ok::<_, ()>(crate::api::normal::collect_images_recursive(api_paths))?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__normal__default_normal_options_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "default_normal_options",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::normal::default_normal_options())?;
+                std::result::Result::Ok(output_ok)
+            })())
         },
     )
 }
@@ -275,6 +338,43 @@ fn wire__crate__api__ecommerce__needs_fit_choice_impl(
         },
     )
 }
+fn wire__crate__api__normal__preview_compress_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "preview_compress",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_path = <String>::sse_decode(&mut deserializer);
+            let api_options = <crate::api::normal::NormalOptions>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok =
+                            crate::api::normal::preview_compress(api_path, api_options)?;
+                        std::result::Result::Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__ecommerce__run_ecommerce_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -308,6 +408,46 @@ fn wire__crate__api__ecommerce__run_ecommerce_impl(
                 transform_result_sse::<_, ()>((move || {
                     let output_ok = Ok::<_, ()>({
                         crate::api::ecommerce::run_ecommerce(api_job, api_dry_run, api_sink);
+                    })?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__normal__run_normal_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "run_normal",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_inputs = <Vec<crate::api::normal::NormalInput>>::sse_decode(&mut deserializer);
+            let api_options = <crate::api::normal::NormalOptions>::sse_decode(&mut deserializer);
+            let api_sink = <StreamSink<
+                crate::api::normal::FileResult,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Ok::<_, ()>({
+                        crate::api::normal::run_normal(api_inputs, api_options, api_sink);
                     })?;
                     std::result::Result::Ok(output_ok)
                 })())
@@ -405,6 +545,16 @@ impl SseDecode
     }
 }
 
+impl SseDecode
+    for StreamSink<crate::api::normal::FileResult, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
 impl SseDecode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -417,6 +567,20 @@ impl SseDecode for bool {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_u8().unwrap() != 0
+    }
+}
+
+impl SseDecode for crate::api::normal::ChromaSubsampling {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::normal::ChromaSubsampling::Auto,
+            1 => crate::api::normal::ChromaSubsampling::S444,
+            2 => crate::api::normal::ChromaSubsampling::S422,
+            3 => crate::api::normal::ChromaSubsampling::S420,
+            _ => unreachable!("Invalid variant for ChromaSubsampling: {}", inner),
+        };
     }
 }
 
@@ -536,6 +700,45 @@ impl SseDecode for crate::api::ecommerce::EcomStage {
     }
 }
 
+impl SseDecode for crate::api::normal::FileResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_index = <u32>::sse_decode(deserializer);
+        let mut var_output = <Option<String>>::sse_decode(deserializer);
+        let mut var_originalSize = <u64>::sse_decode(deserializer);
+        let mut var_newSize = <u64>::sse_decode(deserializer);
+        let mut var_width = <u32>::sse_decode(deserializer);
+        let mut var_height = <u32>::sse_decode(deserializer);
+        let mut var_status = <crate::api::normal::FileStatus>::sse_decode(deserializer);
+        let mut var_error = <Option<String>>::sse_decode(deserializer);
+        let mut var_warnings = <Vec<String>>::sse_decode(deserializer);
+        return crate::api::normal::FileResult {
+            index: var_index,
+            output: var_output,
+            original_size: var_originalSize,
+            new_size: var_newSize,
+            width: var_width,
+            height: var_height,
+            status: var_status,
+            error: var_error,
+            warnings: var_warnings,
+        };
+    }
+}
+
+impl SseDecode for crate::api::normal::FileStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::normal::FileStatus::Done,
+            1 => crate::api::normal::FileStatus::KeptOriginal,
+            2 => crate::api::normal::FileStatus::Failed,
+            _ => unreachable!("Invalid variant for FileStatus: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::ecommerce::Fit {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -622,6 +825,18 @@ impl SseDecode for Vec<crate::api::ecommerce::EcomInput> {
     }
 }
 
+impl SseDecode for Vec<crate::api::normal::NormalInput> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::normal::NormalInput>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::ecommerce::OutputInfo> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -676,6 +891,58 @@ impl SseDecode for Vec<crate::api::ecommerce::ShopPlatform> {
     }
 }
 
+impl SseDecode for crate::api::normal::NormalInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_path = <String>::sse_decode(deserializer);
+        let mut var_base = <Option<String>>::sse_decode(deserializer);
+        return crate::api::normal::NormalInput {
+            path: var_path,
+            base: var_base,
+        };
+    }
+}
+
+impl SseDecode for crate::api::normal::NormalOptions {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_lossless = <bool>::sse_decode(deserializer);
+        let mut var_quality = <u8>::sse_decode(deserializer);
+        let mut var_maxSize = <u64>::sse_decode(deserializer);
+        let mut var_jpegChroma = <crate::api::normal::ChromaSubsampling>::sse_decode(deserializer);
+        let mut var_pngLevel = <u8>::sse_decode(deserializer);
+        let mut var_keepMetadata = <bool>::sse_decode(deserializer);
+        let mut var_keepDates = <bool>::sse_decode(deserializer);
+        let mut var_resize = <crate::api::normal::ResizeMode>::sse_decode(deserializer);
+        let mut var_resizeValue = <u32>::sse_decode(deserializer);
+        let mut var_resizeValue2 = <u32>::sse_decode(deserializer);
+        let mut var_noEnlarge = <bool>::sse_decode(deserializer);
+        let mut var_format = <crate::api::normal::OutFormat>::sse_decode(deserializer);
+        let mut var_outputDir = <String>::sse_decode(deserializer);
+        let mut var_suffix = <String>::sse_decode(deserializer);
+        let mut var_keepStructure = <bool>::sse_decode(deserializer);
+        let mut var_skipIfBigger = <bool>::sse_decode(deserializer);
+        return crate::api::normal::NormalOptions {
+            lossless: var_lossless,
+            quality: var_quality,
+            max_size: var_maxSize,
+            jpeg_chroma: var_jpegChroma,
+            png_level: var_pngLevel,
+            keep_metadata: var_keepMetadata,
+            keep_dates: var_keepDates,
+            resize: var_resize,
+            resize_value: var_resizeValue,
+            resize_value2: var_resizeValue2,
+            no_enlarge: var_noEnlarge,
+            format: var_format,
+            output_dir: var_outputDir,
+            suffix: var_suffix,
+            keep_structure: var_keepStructure,
+            skip_if_bigger: var_skipIfBigger,
+        };
+    }
+}
+
 impl SseDecode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -697,6 +964,31 @@ impl SseDecode for Option<crate::api::ecommerce::EcomReport> {
         } else {
             return None;
         }
+    }
+}
+
+impl SseDecode for Option<u8> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<u8>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for crate::api::normal::OutFormat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::normal::OutFormat::Same,
+            1 => crate::api::normal::OutFormat::Jpeg,
+            2 => crate::api::normal::OutFormat::Png,
+            3 => crate::api::normal::OutFormat::Webp,
+            _ => unreachable!("Invalid variant for OutFormat: {}", inner),
+        };
     }
 }
 
@@ -734,6 +1026,45 @@ impl SseDecode for crate::api::ecommerce::OverflowInfo {
             platform: var_platform,
             count: var_count,
             limit: var_limit,
+        };
+    }
+}
+
+impl SseDecode for crate::api::normal::PreviewResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_ext = <String>::sse_decode(deserializer);
+        let mut var_width = <u32>::sse_decode(deserializer);
+        let mut var_height = <u32>::sse_decode(deserializer);
+        let mut var_originalSize = <u64>::sse_decode(deserializer);
+        let mut var_quality = <Option<u8>>::sse_decode(deserializer);
+        let mut var_warnings = <Vec<String>>::sse_decode(deserializer);
+        return crate::api::normal::PreviewResult {
+            data: var_data,
+            ext: var_ext,
+            width: var_width,
+            height: var_height,
+            original_size: var_originalSize,
+            quality: var_quality,
+            warnings: var_warnings,
+        };
+    }
+}
+
+impl SseDecode for crate::api::normal::ResizeMode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::normal::ResizeMode::None,
+            1 => crate::api::normal::ResizeMode::Percentage,
+            2 => crate::api::normal::ResizeMode::Width,
+            3 => crate::api::normal::ResizeMode::Height,
+            4 => crate::api::normal::ResizeMode::LongEdge,
+            5 => crate::api::normal::ResizeMode::ShortEdge,
+            6 => crate::api::normal::ResizeMode::FitBox,
+            _ => unreachable!("Invalid variant for ResizeMode: {}", inner),
         };
     }
 }
@@ -786,10 +1117,18 @@ fn pde_ffi_dispatcher_primary_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         1 => wire__crate__api__files__collect_images_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__files__image_meta_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__files__init_app_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__ecommerce__run_ecommerce_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__files__thumbnail_impl(port, ptr, rust_vec_len, data_len),
+        2 => wire__crate__api__normal__collect_images_recursive_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        6 => wire__crate__api__files__image_meta_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__files__init_app_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__normal__preview_compress_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__ecommerce__run_ecommerce_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__normal__run_normal_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__files__thumbnail_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -802,17 +1141,41 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        2 => wire__crate__api__ecommerce__default_settings_impl(ptr, rust_vec_len, data_len),
-        3 => wire__crate__api__ecommerce__desc_limit_impl(ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__files__natural_compare_impl(ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__ecommerce__needs_fit_choice_impl(ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__files__sort_natural_impl(ptr, rust_vec_len, data_len),
+        3 => wire__crate__api__normal__default_normal_options_impl(ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__ecommerce__default_settings_impl(ptr, rust_vec_len, data_len),
+        5 => wire__crate__api__ecommerce__desc_limit_impl(ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__files__natural_compare_impl(ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__ecommerce__needs_fit_choice_impl(ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__files__sort_natural_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
 
 // Section: rust2dart
 
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::ChromaSubsampling {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Auto => 0.into_dart(),
+            Self::S444 => 1.into_dart(),
+            Self::S422 => 2.into_dart(),
+            Self::S420 => 3.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::normal::ChromaSubsampling
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::ChromaSubsampling>
+    for crate::api::normal::ChromaSubsampling
+{
+    fn into_into_dart(self) -> crate::api::normal::ChromaSubsampling {
+        self
+    }
+}
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::ecommerce::DescCount {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
@@ -978,6 +1341,56 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::ecommerce::EcomStage>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::FileResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.index.into_into_dart().into_dart(),
+            self.output.into_into_dart().into_dart(),
+            self.original_size.into_into_dart().into_dart(),
+            self.new_size.into_into_dart().into_dart(),
+            self.width.into_into_dart().into_dart(),
+            self.height.into_into_dart().into_dart(),
+            self.status.into_into_dart().into_dart(),
+            self.error.into_into_dart().into_dart(),
+            self.warnings.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::normal::FileResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::FileResult>
+    for crate::api::normal::FileResult
+{
+    fn into_into_dart(self) -> crate::api::normal::FileResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::FileStatus {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Done => 0.into_dart(),
+            Self::KeptOriginal => 1.into_dart(),
+            Self::Failed => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::normal::FileStatus
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::FileStatus>
+    for crate::api::normal::FileStatus
+{
+    fn into_into_dart(self) -> crate::api::normal::FileStatus {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::ecommerce::Fit {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -1037,6 +1450,82 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::ecommerce::ImgCategory>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::NormalInput {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.path.into_into_dart().into_dart(),
+            self.base.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::normal::NormalInput
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::NormalInput>
+    for crate::api::normal::NormalInput
+{
+    fn into_into_dart(self) -> crate::api::normal::NormalInput {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::NormalOptions {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.lossless.into_into_dart().into_dart(),
+            self.quality.into_into_dart().into_dart(),
+            self.max_size.into_into_dart().into_dart(),
+            self.jpeg_chroma.into_into_dart().into_dart(),
+            self.png_level.into_into_dart().into_dart(),
+            self.keep_metadata.into_into_dart().into_dart(),
+            self.keep_dates.into_into_dart().into_dart(),
+            self.resize.into_into_dart().into_dart(),
+            self.resize_value.into_into_dart().into_dart(),
+            self.resize_value2.into_into_dart().into_dart(),
+            self.no_enlarge.into_into_dart().into_dart(),
+            self.format.into_into_dart().into_dart(),
+            self.output_dir.into_into_dart().into_dart(),
+            self.suffix.into_into_dart().into_dart(),
+            self.keep_structure.into_into_dart().into_dart(),
+            self.skip_if_bigger.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::normal::NormalOptions
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::NormalOptions>
+    for crate::api::normal::NormalOptions
+{
+    fn into_into_dart(self) -> crate::api::normal::NormalOptions {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::OutFormat {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Same => 0.into_dart(),
+            Self::Jpeg => 1.into_dart(),
+            Self::Png => 2.into_dart(),
+            Self::Webp => 3.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::normal::OutFormat {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::OutFormat>
+    for crate::api::normal::OutFormat
+{
+    fn into_into_dart(self) -> crate::api::normal::OutFormat {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::ecommerce::OutputInfo {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -1086,6 +1575,58 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::ecommerce::OverflowInfo>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::PreviewResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.ext.into_into_dart().into_dart(),
+            self.width.into_into_dart().into_dart(),
+            self.height.into_into_dart().into_dart(),
+            self.original_size.into_into_dart().into_dart(),
+            self.quality.into_into_dart().into_dart(),
+            self.warnings.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::normal::PreviewResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::PreviewResult>
+    for crate::api::normal::PreviewResult
+{
+    fn into_into_dart(self) -> crate::api::normal::PreviewResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::normal::ResizeMode {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::None => 0.into_dart(),
+            Self::Percentage => 1.into_dart(),
+            Self::Width => 2.into_dart(),
+            Self::Height => 3.into_dart(),
+            Self::LongEdge => 4.into_dart(),
+            Self::ShortEdge => 5.into_dart(),
+            Self::FitBox => 6.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::normal::ResizeMode
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::normal::ResizeMode>
+    for crate::api::normal::ResizeMode
+{
+    fn into_into_dart(self) -> crate::api::normal::ResizeMode {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::ecommerce::ShopPlatform {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -1126,6 +1667,15 @@ impl SseEncode
     }
 }
 
+impl SseEncode
+    for StreamSink<crate::api::normal::FileResult, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1137,6 +1687,24 @@ impl SseEncode for bool {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_u8(self as _).unwrap();
+    }
+}
+
+impl SseEncode for crate::api::normal::ChromaSubsampling {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::normal::ChromaSubsampling::Auto => 0,
+                crate::api::normal::ChromaSubsampling::S444 => 1,
+                crate::api::normal::ChromaSubsampling::S422 => 2,
+                crate::api::normal::ChromaSubsampling::S420 => 3,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 
@@ -1212,6 +1780,38 @@ impl SseEncode for crate::api::ecommerce::EcomStage {
                 crate::api::ecommerce::EcomStage::Writing => 2,
                 crate::api::ecommerce::EcomStage::Done => 3,
                 crate::api::ecommerce::EcomStage::Failed => 4,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::normal::FileResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.index, serializer);
+        <Option<String>>::sse_encode(self.output, serializer);
+        <u64>::sse_encode(self.original_size, serializer);
+        <u64>::sse_encode(self.new_size, serializer);
+        <u32>::sse_encode(self.width, serializer);
+        <u32>::sse_encode(self.height, serializer);
+        <crate::api::normal::FileStatus>::sse_encode(self.status, serializer);
+        <Option<String>>::sse_encode(self.error, serializer);
+        <Vec<String>>::sse_encode(self.warnings, serializer);
+    }
+}
+
+impl SseEncode for crate::api::normal::FileStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::normal::FileStatus::Done => 0,
+                crate::api::normal::FileStatus::KeptOriginal => 1,
+                crate::api::normal::FileStatus::Failed => 2,
                 _ => {
                     unimplemented!("");
                 }
@@ -1302,6 +1902,16 @@ impl SseEncode for Vec<crate::api::ecommerce::EcomInput> {
     }
 }
 
+impl SseEncode for Vec<crate::api::normal::NormalInput> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::normal::NormalInput>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::ecommerce::OutputInfo> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1342,6 +1952,36 @@ impl SseEncode for Vec<crate::api::ecommerce::ShopPlatform> {
     }
 }
 
+impl SseEncode for crate::api::normal::NormalInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.path, serializer);
+        <Option<String>>::sse_encode(self.base, serializer);
+    }
+}
+
+impl SseEncode for crate::api::normal::NormalOptions {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.lossless, serializer);
+        <u8>::sse_encode(self.quality, serializer);
+        <u64>::sse_encode(self.max_size, serializer);
+        <crate::api::normal::ChromaSubsampling>::sse_encode(self.jpeg_chroma, serializer);
+        <u8>::sse_encode(self.png_level, serializer);
+        <bool>::sse_encode(self.keep_metadata, serializer);
+        <bool>::sse_encode(self.keep_dates, serializer);
+        <crate::api::normal::ResizeMode>::sse_encode(self.resize, serializer);
+        <u32>::sse_encode(self.resize_value, serializer);
+        <u32>::sse_encode(self.resize_value2, serializer);
+        <bool>::sse_encode(self.no_enlarge, serializer);
+        <crate::api::normal::OutFormat>::sse_encode(self.format, serializer);
+        <String>::sse_encode(self.output_dir, serializer);
+        <String>::sse_encode(self.suffix, serializer);
+        <bool>::sse_encode(self.keep_structure, serializer);
+        <bool>::sse_encode(self.skip_if_bigger, serializer);
+    }
+}
+
 impl SseEncode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1359,6 +1999,34 @@ impl SseEncode for Option<crate::api::ecommerce::EcomReport> {
         if let Some(value) = self {
             <crate::api::ecommerce::EcomReport>::sse_encode(value, serializer);
         }
+    }
+}
+
+impl SseEncode for Option<u8> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <u8>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for crate::api::normal::OutFormat {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::normal::OutFormat::Same => 0,
+                crate::api::normal::OutFormat::Jpeg => 1,
+                crate::api::normal::OutFormat::Png => 2,
+                crate::api::normal::OutFormat::Webp => 3,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 
@@ -1382,6 +2050,40 @@ impl SseEncode for crate::api::ecommerce::OverflowInfo {
         <crate::api::ecommerce::ShopPlatform>::sse_encode(self.platform, serializer);
         <u32>::sse_encode(self.count, serializer);
         <u32>::sse_encode(self.limit, serializer);
+    }
+}
+
+impl SseEncode for crate::api::normal::PreviewResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<u8>>::sse_encode(self.data, serializer);
+        <String>::sse_encode(self.ext, serializer);
+        <u32>::sse_encode(self.width, serializer);
+        <u32>::sse_encode(self.height, serializer);
+        <u64>::sse_encode(self.original_size, serializer);
+        <Option<u8>>::sse_encode(self.quality, serializer);
+        <Vec<String>>::sse_encode(self.warnings, serializer);
+    }
+}
+
+impl SseEncode for crate::api::normal::ResizeMode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::normal::ResizeMode::None => 0,
+                crate::api::normal::ResizeMode::Percentage => 1,
+                crate::api::normal::ResizeMode::Width => 2,
+                crate::api::normal::ResizeMode::Height => 3,
+                crate::api::normal::ResizeMode::LongEdge => 4,
+                crate::api::normal::ResizeMode::ShortEdge => 5,
+                crate::api::normal::ResizeMode::FitBox => 6,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 

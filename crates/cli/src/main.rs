@@ -98,6 +98,37 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
+    /// 普通模式：壓縮圖片（檔案或資料夾，資料夾含子資料夾）
+    Compress {
+        #[arg(required = true)]
+        paths: Vec<PathBuf>,
+        /// 品質 1–100
+        #[arg(short, long, default_value_t = 80)]
+        quality: u8,
+        /// 無損
+        #[arg(long)]
+        lossless: bool,
+        /// 目標大小（KB），指定時改為依大小搜尋品質
+        #[arg(long)]
+        max_kb: Option<u64>,
+        /// 輸出格式：same / jpeg / png / webp
+        #[arg(long, default_value = "same")]
+        format: String,
+        /// 長邊縮放到此像素（不放大）
+        #[arg(long)]
+        long_edge: Option<u32>,
+        /// 輸出資料夾（預設與原檔相同）
+        #[arg(long)]
+        out: Option<PathBuf>,
+        /// 檔名後綴
+        #[arg(long, default_value = "_compressed")]
+        suffix: String,
+        /// 不保留 EXIF
+        #[arg(long)]
+        strip: bool,
+        #[arg(long)]
+        json: bool,
+    },
     /// 顯示圖片尺寸及各平台是否需選擇補白/裁切
     Info { files: Vec<PathBuf> },
 }
@@ -305,6 +336,105 @@ fn main() -> ExitCode {
                 }
             };
             exec(&job, no_trash, dry_run, json)
+        }
+        Cmd::Compress {
+            paths,
+            quality,
+            lossless,
+            max_kb,
+            format,
+            long_edge,
+            out,
+            suffix,
+            strip,
+            json,
+        } => {
+            use imgcore::normal as nm;
+            let format = match format.to_ascii_lowercase().as_str() {
+                "same" => nm::OutFormat::Same,
+                "jpeg" | "jpg" => nm::OutFormat::Jpeg,
+                "png" => nm::OutFormat::Png,
+                "webp" => nm::OutFormat::Webp,
+                other => {
+                    eprintln!("不支援的格式：{other}");
+                    return ExitCode::FAILURE;
+                }
+            };
+            let mut inputs: Vec<(PathBuf, Option<PathBuf>)> = Vec::new();
+            fn walk(d: &Path, base: &Path, out: &mut Vec<(PathBuf, Option<PathBuf>)>) {
+                let mut v: Vec<PathBuf> = std::fs::read_dir(d)
+                    .map(|rd| rd.filter_map(|e| e.ok().map(|e| e.path())).collect())
+                    .unwrap_or_default();
+                natsort::sort_paths(&mut v);
+                for p in v {
+                    if p.is_dir() {
+                        walk(&p, base, out);
+                    } else if load::is_image_path(&p) {
+                        out.push((p, Some(base.to_path_buf())));
+                    }
+                }
+            }
+            for p in &paths {
+                let p = std::path::absolute(p).unwrap_or_else(|_| p.clone());
+                if p.is_dir() {
+                    walk(&p, &p, &mut inputs);
+                } else if p.is_file() {
+                    inputs.push((p, None));
+                } else {
+                    eprintln!("找不到：{}", p.display());
+                    return ExitCode::FAILURE;
+                }
+            }
+            let o = nm::Options {
+                quality: quality.clamp(1, 100),
+                lossless,
+                max_size: max_kb.map(|k| k * 1000),
+                format,
+                resize: if long_edge.is_some() {
+                    nm::ResizeMode::LongEdge
+                } else {
+                    nm::ResizeMode::None
+                },
+                resize_value: long_edge.unwrap_or(100),
+                output_dir: out,
+                keep_structure: true,
+                suffix,
+                keep_metadata: !strip,
+                ..nm::Options::default()
+            };
+            let res = nm::run_batch(&inputs, &o, Disposal::platform_default(), &|_, _| {});
+            if json {
+                println!("{}", serde_json::to_string_pretty(&res).unwrap());
+            } else {
+                for r in &res {
+                    let name = r.input.file_name().unwrap_or_default().to_string_lossy();
+                    match r.status {
+                        nm::Status::Failed => {
+                            println!("✗ {name}：{}", r.error.as_deref().unwrap_or(""))
+                        }
+                        _ => println!(
+                            "{} {name}  {} → {} bytes（−{:.1}%）{}",
+                            if r.status == nm::Status::Done {
+                                "✓"
+                            } else {
+                                "="
+                            },
+                            r.original_size,
+                            r.new_size,
+                            (1.0 - r.new_size as f64 / r.original_size.max(1) as f64) * 100.0,
+                            r.output
+                                .as_ref()
+                                .map(|p| format!(" → {}", p.display()))
+                                .unwrap_or_default()
+                        ),
+                    }
+                }
+            }
+            if res.iter().any(|r| r.status == nm::Status::Failed) {
+                ExitCode::FAILURE
+            } else {
+                ExitCode::SUCCESS
+            }
         }
         Cmd::Info { files } => {
             let mut ok = true;
