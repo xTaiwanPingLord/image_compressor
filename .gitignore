@@ -2,6 +2,14 @@ target/
 test_images/
 check_env.*
 check_build.*
+check_android.*
+android_check.txt
+heif_check.*
+setup_android.*
+pair_android.*
+build_android.*
+collect_android.*
+android_log.txt
 env_check*.txt
 build_windows.log
 _ic_src_*.tgz

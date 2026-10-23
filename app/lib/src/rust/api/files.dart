@@ -4,8 +4,11 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'common.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+
+// These functions are ignored because they are not marked as `pub`: `is_heif_file`
 
 /// 展開資料夾（不遞迴）、只保留支援的圖片，依檔名自然排序。
 Future<List<String>> collectImages({required List<String> paths}) =>
@@ -17,6 +20,14 @@ List<String> sortNatural({required List<String> paths}) =>
 
 int naturalCompare({required String a, required String b}) =>
     RustLib.instance.api.crateApiFilesNaturalCompare(a: a, b: b);
+
+/// 此平台能否解碼 HEIC / HEIF（第一次呼叫會做一次實際解碼測試）。
+Future<bool> heifSupported() =>
+    RustLib.instance.api.crateApiFilesHeifSupported();
+
+/// HEIC 解碼自我測試（診斷用）：每行「OK/FAIL 項目: 說明」。
+Future<List<String>> heifSelfTest() =>
+    RustLib.instance.api.crateApiFilesHeifSelfTest();
 
 /// 讀取尺寸（已考慮 EXIF 旋轉）與檔案大小。
 Future<ImageMeta> imageMeta({required String path}) =>
@@ -32,8 +43,8 @@ class ImageMeta {
   final int height;
   final BigInt fileSize;
 
-  /// 讀取失敗時的錯誤訊息
-  final String? error;
+  /// 讀取失敗（含此平台無法解碼 HEIC）
+  final AppError? error;
 
   const ImageMeta({
     required this.path,

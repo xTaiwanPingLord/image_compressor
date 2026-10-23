@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../platform/android_files.dart';
 import '../src/rust/api/common.dart';
 import '../src/rust/api/files.dart';
 import '../src/rust/api/normal.dart';
@@ -54,22 +56,27 @@ class NormalSettings {
   /// 目標大小模式
   bool get sizeMode => maxSize > 0;
 
-  NormalOptions toRust() => NormalOptions(
+  /// Android 執行時改寫輸出位置（先寫到暫存資料夾）。
+  NormalOptions toRust({
+    String? outputDir,
+    bool? keepStructure,
+    bool? keepDates,
+  }) => NormalOptions(
     lossless: lossless,
     quality: quality,
     maxSize: BigInt.from(maxSize),
     jpegChroma: jpegChroma,
     pngLevel: pngLevel,
     keepMetadata: keepMetadata,
-    keepDates: keepDates,
+    keepDates: keepDates ?? this.keepDates,
     resize: resize,
     resizeValue: resizeValue,
     resizeValue2: resizeValue2,
     noEnlarge: noEnlarge,
     format: format,
-    outputDir: outputDir,
+    outputDir: outputDir ?? this.outputDir,
     suffix: suffix,
-    keepStructure: keepStructure,
+    keepStructure: keepStructure ?? this.keepStructure,
     skipIfBigger: skipIfBigger,
   );
 
@@ -118,20 +125,29 @@ class NormalSettings {
 enum ItemStatus { pending, working, done, keptOriginal, failed }
 
 /// 不能執行的原因。
-enum NormalBlock { running, noImages }
+enum NormalBlock {
+  running,
+  noImages,
+
+  /// Android：有圖片不是從資料夾加入，無法「與原檔相同資料夾」輸出
+  needOutputFolder,
+}
 
 class NormalItem {
-  NormalItem(this.path, this.base) : id = _next++;
+  NormalItem(this.path, this.base, {this.source}) : id = _next++;
   static int _next = 0;
 
   final int id;
   final String path;
   final String? base;
+
+  /// Android：來源資料夾（從資料夾加入才有）
+  final AndroidSource? source;
   int originalSize = 0;
   int width = 0;
   int height = 0;
   bool loaded = false;
-  String? loadError;
+  AppError? loadError;
 
   int? newSize;
   int? newWidth;
@@ -141,7 +157,16 @@ class NormalItem {
   String? output;
   List<WarningInfo> warnings = const [];
 
-  String get name => p.basename(path);
+  String get name => source?.name ?? p.basename(path);
+
+  /// 顯示用的完整位置
+  String get location => source == null
+      ? path
+      : [
+          source!.tree.name,
+          if (source!.relDir.isNotEmpty) source!.relDir,
+          source!.name,
+        ].join('/');
 
   /// 節省比例（0–1；負值 = 變大）
   double? get saving =>
@@ -236,6 +261,23 @@ class NormalState extends ChangeNotifier {
     if (focusedId == null) select(added.first.id);
     notifyListeners();
     // 讀取尺寸（限制同時數量）
+    const batch = 8;
+    for (var i = 0; i < added.length; i += batch) {
+      await Future.wait(added.skip(i).take(batch).map(_loadMeta));
+      notifyListeners();
+    }
+  }
+
+  /// Android：加入已複製到快取的圖片。
+  Future<void> addImported(List<ImportedFile> files) async {
+    final added = [
+      for (final f in files) NormalItem(f.path, f.base, source: f.source),
+    ];
+    if (added.isEmpty) return;
+    items.addAll(added);
+    _applySort();
+    if (focusedId == null) select(added.first.id);
+    notifyListeners();
     const batch = 8;
     for (var i = 0; i < added.length; i += batch) {
       await Future.wait(added.skip(i).take(batch).map(_loadMeta));
@@ -388,6 +430,11 @@ class NormalState extends ChangeNotifier {
   NormalBlock? get blockReason {
     if (running) return NormalBlock.running;
     if (items.isEmpty) return NormalBlock.noImages;
+    if (AndroidFiles.supported &&
+        settings.outputDir.trim().isEmpty &&
+        items.any((i) => i.source == null)) {
+      return NormalBlock.needOutputFolder;
+    }
     return null;
   }
 
@@ -411,12 +458,30 @@ class NormalState extends ChangeNotifier {
     }
     notifyListeners();
     final dirs = <String>{};
+    final android = AndroidFiles.supported;
     try {
+      final staging = android
+          ? await AndroidFiles.instance.newExportDir()
+          : null;
       await for (final r in runNormal(
         inputs: targets
-            .map((t) => NormalInput(path: t.path, base: t.base))
+            .map(
+              (t) => NormalInput(
+                path: t.path,
+                // Android：單張檔案以 import 資料夾為 base，避免同名檔互相覆蓋
+                base: android
+                    ? (t.base ?? p.dirname(p.dirname(t.path)))
+                    : t.base,
+              ),
+            )
             .toList(),
-        options: settings.toRust(),
+        options: android
+            ? settings.toRust(
+                outputDir: staging,
+                keepStructure: true,
+                keepDates: false,
+              )
+            : settings.toRust(),
       )) {
         final t = targets[r.index];
         t
@@ -434,7 +499,11 @@ class NormalState extends ChangeNotifier {
         if (r.originalSize > BigInt.zero) {
           t.originalSize = r.originalSize.toInt();
         }
-        if (r.output != null) dirs.add(p.dirname(r.output!));
+        if (android && r.output != null && r.status != FileStatus.failed) {
+          await _exportAndroid(t, r, dirs);
+        } else if (r.output != null) {
+          dirs.add(p.dirname(r.output!));
+        }
         doneCount++;
         notifyListeners();
       }
@@ -460,5 +529,50 @@ class NormalState extends ChangeNotifier {
     _applySort();
     notifyListeners();
     return lastSummary!;
+  }
+
+  /// Android：把暫存輸出寫回使用者資料夾。
+  Future<void> _exportAndroid(
+    NormalItem t,
+    FileResult r,
+    Set<String> dirs,
+  ) async {
+    final custom = decodeTreeDir(settings.outputDir)?.$1;
+    final src = t.source;
+    final name = p.basename(r.output!);
+    final TreeRef tree;
+    final String relDir;
+    if (custom != null) {
+      tree = custom;
+      relDir = settings.keepStructure && src != null ? src.relDir : '';
+    } else {
+      tree = src!.tree;
+      relDir = src.relDir;
+    }
+    final relPath = relDir.isEmpty ? name : '$relDir/$name';
+    // 與原檔同位置同名 = 覆寫原檔：原檔先移到 _old/
+    final isOriginal =
+        src != null &&
+        tree == src.tree &&
+        relDir == src.relDir &&
+        name == src.name;
+    try {
+      if (!(isOriginal && r.status == FileStatus.keptOriginal)) {
+        await AndroidFiles.instance.writeFile(
+          tree,
+          relPath,
+          r.output!,
+          backup: isOriginal,
+        );
+      }
+      t.output = '${tree.name}/$relPath';
+      dirs.add(encodeTreeDir(tree, relDir));
+    } on PlatformException catch (e) {
+      t
+        ..status = ItemStatus.failed
+        ..newSize = null
+        ..output = null
+        ..error = AppError(kind: ErrorKind.io, detail: e.message ?? e.code);
+    }
   }
 }

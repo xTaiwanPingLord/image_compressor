@@ -407,5 +407,33 @@
   "fontSample": "圖片壓縮 Image Compressor 0123",
   "setAbout": "關於",
   "aboutFontCredit": "內建字體：MiSans、MiSans TC（小米 MiSans 字體，免費商用授權）",
-  "colonSep": "："
+  "colonSep": "：",
+  "heicUnsupportedShort": "不支援 HEIC",
+  "errHeifWindows": "此電腦無法讀取 HEIC：請從 Microsoft Store 安裝「HEIF 影像延伸模組」與「HEVC 視訊延伸模組」",
+  "errHeifLinux": "無法讀取 HEIC：請安裝 libheif1 與 libheif-plugin-libde265",
+  "errHeifAndroid": "此裝置無法讀取 HEIC（需要 Android 11 以上）",
+  "errHeifOther": "此平台目前無法讀取 HEIC",
+  "aboutHeicOk": "HEIC：可讀取（使用系統解碼器）",
+  "aboutHeicNo": "HEIC：無法讀取",
+  "blockNoOutputFolder": "請選擇輸出資料夾",
+  "blockNeedOutputFolder": "有圖片不是從資料夾加入，請在「輸出」中指定資料夾",
+  "chooseOutputFolder": "選擇輸出資料夾",
+  "outputTo": "輸出到：{name}",
+  "@outputTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedToWhich": "把 {count} 張圖片加入哪一區？",
+  "@sharedToWhich": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overwriteBodyAndroid": "輸出位置與原檔相同且沒有後綴，原檔會先移到同資料夾的 _old 子資料夾，再寫入壓縮後的檔案。要繼續嗎？",
+  "overwriteWarningAndroid": "同資料夾且無後綴：會覆寫原檔（原檔先移到 _old 子資料夾）"
 }

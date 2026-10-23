@@ -7,8 +7,10 @@ const miSansFamily = 'MiSans TC';
 const miSansScFamily = 'MiSans';
 
 /// MiSans 依語言選主字體：簡體用 MiSans（簡體字形），其他用 MiSans TC；互為備援。
-String miSansPrimary(AppLanguage lang) => lang == AppLanguage.zhCN ? miSansScFamily : miSansFamily;
-String miSansSecondary(AppLanguage lang) => lang == AppLanguage.zhCN ? miSansFamily : miSansScFamily;
+String miSansPrimary(AppLanguage lang) =>
+    lang == AppLanguage.zhCN ? miSansScFamily : miSansFamily;
+String miSansSecondary(AppLanguage lang) =>
+    lang == AppLanguage.zhCN ? miSansFamily : miSansScFamily;
 
 /// 依語言挑選系統中文字體，避免繁簡字形混用。
 List<String> _systemFallback(AppLanguage lang) => switch (lang) {

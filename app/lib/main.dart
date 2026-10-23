@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,6 +10,8 @@ import 'ecommerce/state.dart';
 import 'l10n/l10n.dart';
 import 'normal/page.dart';
 import 'normal/state.dart';
+import 'platform/android_files.dart';
+import 'src/rust/api/ecommerce.dart' show ImgCategory;
 import 'settings/app_settings.dart';
 import 'settings/page.dart';
 import 'settings/theme.dart';
@@ -134,6 +138,48 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   static const _kMode = 'app.mode';
   late int _index = (widget.prefs?.getInt(_kMode) ?? 0).clamp(0, 1);
+  StreamSubscription<List<ImportedFile>>? _shareSub;
+
+  @override
+  void initState() {
+    super.initState();
+    if (AndroidFiles.supported) {
+      _shareSub = AndroidFiles.instance.shared.listen(_onShared);
+      AndroidFiles.instance.init();
+    }
+  }
+
+  @override
+  void dispose() {
+    _shareSub?.cancel();
+    super.dispose();
+  }
+
+  /// 從其他 App 分享進來：電商模式時詢問放到哪一區，其他情況加入普通模式。
+  Future<void> _onShared(List<ImportedFile> files) async {
+    if (!mounted || files.isEmpty) return;
+    if (_index == 1 && !widget.ecom.running) {
+      final l = context.l;
+      final cat = await showDialog<ImgCategory>(
+        context: context,
+        builder: (context) => SimpleDialog(
+          title: Text(l.sharedToWhich(files.length)),
+          children: [
+            for (final c in ImgCategory.values)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, c),
+                child: Text(categoryLabel(l, c)),
+              ),
+          ],
+        ),
+      );
+      if (cat != null) await widget.ecom.addImported(cat, files);
+      return;
+    }
+    if (widget.normal.running) return;
+    _go(0);
+    await widget.normal.addImported(files);
+  }
 
   void _go(int i) {
     setState(() => _index = i);

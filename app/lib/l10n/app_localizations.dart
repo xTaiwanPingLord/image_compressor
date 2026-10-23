@@ -1149,6 +1149,90 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'：'**
   String get colonSep;
+
+  /// No description provided for @heicUnsupportedShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'不支援 HEIC'**
+  String get heicUnsupportedShort;
+
+  /// No description provided for @errHeifWindows.
+  ///
+  /// In zh, this message translates to:
+  /// **'此電腦無法讀取 HEIC：請從 Microsoft Store 安裝「HEIF 影像延伸模組」與「HEVC 視訊延伸模組」'**
+  String get errHeifWindows;
+
+  /// No description provided for @errHeifLinux.
+  ///
+  /// In zh, this message translates to:
+  /// **'無法讀取 HEIC：請安裝 libheif1 與 libheif-plugin-libde265'**
+  String get errHeifLinux;
+
+  /// No description provided for @errHeifAndroid.
+  ///
+  /// In zh, this message translates to:
+  /// **'此裝置無法讀取 HEIC（需要 Android 11 以上）'**
+  String get errHeifAndroid;
+
+  /// No description provided for @errHeifOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'此平台目前無法讀取 HEIC'**
+  String get errHeifOther;
+
+  /// No description provided for @aboutHeicOk.
+  ///
+  /// In zh, this message translates to:
+  /// **'HEIC：可讀取（使用系統解碼器）'**
+  String get aboutHeicOk;
+
+  /// No description provided for @aboutHeicNo.
+  ///
+  /// In zh, this message translates to:
+  /// **'HEIC：無法讀取'**
+  String get aboutHeicNo;
+
+  /// No description provided for @blockNoOutputFolder.
+  ///
+  /// In zh, this message translates to:
+  /// **'請選擇輸出資料夾'**
+  String get blockNoOutputFolder;
+
+  /// No description provided for @blockNeedOutputFolder.
+  ///
+  /// In zh, this message translates to:
+  /// **'有圖片不是從資料夾加入，請在「輸出」中指定資料夾'**
+  String get blockNeedOutputFolder;
+
+  /// No description provided for @chooseOutputFolder.
+  ///
+  /// In zh, this message translates to:
+  /// **'選擇輸出資料夾'**
+  String get chooseOutputFolder;
+
+  /// No description provided for @outputTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'輸出到：{name}'**
+  String outputTo(String name);
+
+  /// No description provided for @sharedToWhich.
+  ///
+  /// In zh, this message translates to:
+  /// **'把 {count} 張圖片加入哪一區？'**
+  String sharedToWhich(int count);
+
+  /// No description provided for @overwriteBodyAndroid.
+  ///
+  /// In zh, this message translates to:
+  /// **'輸出位置與原檔相同且沒有後綴，原檔會先移到同資料夾的 _old 子資料夾，再寫入壓縮後的檔案。要繼續嗎？'**
+  String get overwriteBodyAndroid;
+
+  /// No description provided for @overwriteWarningAndroid.
+  ///
+  /// In zh, this message translates to:
+  /// **'同資料夾且無後綴：會覆寫原檔（原檔先移到 _old 子資料夾）'**
+  String get overwriteWarningAndroid;
 }
 
 class _AppLocalizationsDelegate

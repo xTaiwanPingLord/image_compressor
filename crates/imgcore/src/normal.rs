@@ -3,8 +3,7 @@
 use crate::cleanup::{self, Disposal};
 use crate::{Error, Result, exif, jpeg_lossless, warn::Warn};
 use image::{
-    DynamicImage, ImageDecoder, ImageEncoder, ImageFormat, ImageReader, RgbaImage,
-    metadata::Orientation,
+    DynamicImage, ImageEncoder, ImageFormat, RgbaImage,
 };
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -183,27 +182,6 @@ pub fn output_kind(input: Option<ImageFormat>, o: &Options) -> Kind {
         OutFormat::Webp => Kind::Webp,
         OutFormat::Same => input_kind(input).unwrap_or(Kind::Png),
     }
-}
-
-struct Decoded {
-    img: DynamicImage,
-    icc: Option<Vec<u8>>,
-    exif: Option<Vec<u8>>,
-}
-
-fn decode(data: &[u8]) -> Result<Decoded> {
-    let err = |e: image::ImageError| Error::Decode {
-        path: String::new(),
-        msg: e.to_string(),
-    };
-    let reader = ImageReader::new(Cursor::new(data)).with_guessed_format()?;
-    let mut dec = reader.into_decoder().map_err(err)?;
-    let icc = dec.icc_profile().ok().flatten();
-    let exif = dec.exif_metadata().ok().flatten();
-    let orient = dec.orientation().unwrap_or(Orientation::NoTransforms);
-    let mut img = DynamicImage::from_decoder(dec).map_err(err)?;
-    img.apply_orientation(orient);
-    Ok(Decoded { img, icc, exif })
 }
 
 fn is_srgb(icc: &[u8]) -> bool {
@@ -398,7 +376,12 @@ fn encode_webp(img: &RgbaImage, q: Option<u8>) -> Vec<u8> {
 /// 在記憶體中壓縮（不寫檔）。預覽與批次共用。
 pub fn compress_bytes(data: &[u8], o: &Options) -> Result<Compressed> {
     let in_fmt = image::guess_format(data).ok();
-    let kind = output_kind(in_fmt, o);
+    // HEIC 多為相片：「與原檔相同」時輸出 JPEG
+    let kind = if in_fmt.is_none() && o.format == OutFormat::Same && crate::heif::is_heif(data) {
+        Kind::Jpeg
+    } else {
+        output_kind(in_fmt, o)
+    };
     let mut warnings = Vec::new();
 
     let resizing = o.resize != ResizeMode::None;
@@ -440,7 +423,7 @@ pub fn compress_bytes(data: &[u8], o: &Options) -> Result<Compressed> {
         }
     }
 
-    let dec = decode(data)?;
+    let dec = crate::load::decode_bytes(data)?;
     if matches!(in_fmt, Some(ImageFormat::Gif)) {
         warnings.push(Warn::GifFirstFrame);
     }
@@ -711,7 +694,7 @@ pub fn run_batch(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::{Rgb, RgbImage, Rgba};
+    use image::{ImageDecoder, ImageReader, Rgb, RgbImage, Rgba, metadata::Orientation};
 
     fn photo(w: u32, h: u32) -> RgbImage {
         let mut s = 12345u32;

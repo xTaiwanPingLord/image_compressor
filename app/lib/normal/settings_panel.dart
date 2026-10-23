@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
+import '../platform/android_files.dart';
 import '../src/rust/api/normal.dart';
 import 'state.dart';
 
@@ -498,7 +499,7 @@ class _OutputTabState extends State<_OutputTab> {
               children: [
                 Expanded(
                   child: Text(
-                    s.outputDir,
+                    treeDirLabel(s.outputDir),
                     style: theme.textTheme.bodySmall,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -541,7 +542,9 @@ class _OutputTabState extends State<_OutputTab> {
           ),
           if (state.overwritesOriginal)
             Text(
-              l.overwriteWarning,
+              AndroidFiles.supported
+                  ? l.overwriteWarningAndroid
+                  : l.overwriteWarning,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.error,
               ),
@@ -554,11 +557,13 @@ class _OutputTabState extends State<_OutputTab> {
             off ? null : (v) => set(() => s.keepMetadata = v),
             subtitle: l.keepMetadataHelp,
           ),
-          _switch(
-            l.keepDates,
-            s.keepDates,
-            off ? null : (v) => set(() => s.keepDates = v),
-          ),
+          // Android 的 SAF 無法設定檔案日期
+          if (!AndroidFiles.supported)
+            _switch(
+              l.keepDates,
+              s.keepDates,
+              off ? null : (v) => set(() => s.keepDates = v),
+            ),
         ]),
         _Section(l.secOther, [
           _switch(
@@ -573,6 +578,13 @@ class _OutputTabState extends State<_OutputTab> {
   }
 
   Future<void> _pickDir() async {
+    if (AndroidFiles.supported) {
+      final t = await AndroidFiles.instance.pickFolder();
+      if (t == null) return;
+      widget.state.settings.outputDir = encodeTreeDir(t, '');
+      widget.state.settingsChanged();
+      return;
+    }
     final d = await getDirectoryPath();
     if (d == null) return;
     widget.state.settings.outputDir = d;

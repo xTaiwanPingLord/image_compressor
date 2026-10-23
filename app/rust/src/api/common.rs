@@ -28,6 +28,8 @@ pub enum ErrorKind {
     Encode,
     Invalid,
     Trash,
+    /// 此平台無法解碼（目前為 HEIC）；detail = 格式名稱
+    Unsupported,
     Other,
 }
 
@@ -44,6 +46,7 @@ impl From<&imgcore::ErrorInfo> for AppError {
             imgcore::ErrorKind::Encode => ErrorKind::Encode,
             imgcore::ErrorKind::Invalid => ErrorKind::Invalid,
             imgcore::ErrorKind::Trash => ErrorKind::Trash,
+            imgcore::ErrorKind::Unsupported => ErrorKind::Unsupported,
         };
         Self {
             kind,

@@ -28,7 +28,17 @@ class AppError {
           detail == other.detail;
 }
 
-enum ErrorKind { io, decode, encode, invalid, trash, other }
+enum ErrorKind {
+  io,
+  decode,
+  encode,
+  invalid,
+  trash,
+
+  /// 此平台無法解碼（目前為 HEIC）；detail = 格式名稱
+  unsupported,
+  other,
+}
 
 /// 警告：code 見 imgcore::warn::Warn::code，args 依 code 固定順序。
 class WarningInfo {

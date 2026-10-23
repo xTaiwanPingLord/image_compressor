@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
+import '../platform/android_files.dart';
 import '../src/rust/api/ecommerce.dart';
 import 'dialogs.dart';
 import 'section.dart';
@@ -101,7 +102,29 @@ class _EcommercePageState extends State<EcommercePage> {
     EcomBlock.noImages => l.blockNoImages,
     EcomBlock.loading => l.blockLoading,
     EcomBlock.unreadable => l.blockUnreadable,
+    EcomBlock.noOutputFolder => l.blockNoOutputFolder,
   };
+
+  /// Android：輸出資料夾（圖片來自資料夾時固定為該資料夾）
+  Widget _androidOutput(BuildContext context) {
+    final l = context.l;
+    final target = s.androidTarget;
+    final fromSource = s.sections.values
+        .expand((x) => x)
+        .any((i) => i.source != null);
+    return ActionChip(
+      avatar: const Icon(Icons.folder_outlined, size: 18),
+      label: Text(
+        target == null ? l.chooseOutputFolder : l.outputTo(target.name),
+      ),
+      onPressed: s.running || fromSource
+          ? null
+          : () async {
+              final t = await AndroidFiles.instance.pickFolder();
+              if (t != null) s.setAndroidOut(t);
+            },
+    );
+  }
 
   Widget _toolbar(BuildContext context) {
     final l = context.l;
@@ -134,6 +157,7 @@ class _EcommercePageState extends State<EcommercePage> {
               selected: s.platforms.contains(pf),
               onSelected: s.running ? null : (v) => s.togglePlatform(pf, v),
             ),
+          if (AndroidFiles.supported) _androidOutput(context),
           Hint(
             message: block == null ? '' : _blockText(l, block),
             child: FilledButton.icon(
@@ -222,6 +246,10 @@ class _EcommercePageState extends State<EcommercePage> {
         default:
           text = l.ecomPreparing;
       }
+    } else if (AndroidFiles.supported &&
+        s.blockReason != null &&
+        s.blockReason != EcomBlock.noImages) {
+      text = _blockText(l, s.blockReason!);
     } else {
       final st = s.settings;
       text =

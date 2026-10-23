@@ -7,7 +7,8 @@ plugins {
 android {
     namespace = "tw.toast.image_compressor"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Use the NDK installed by Android Studio on the dev machine (Flutter default is 28.x)
+    ndkVersion = "30.0.16248370"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

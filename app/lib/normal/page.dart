@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import '../ecommerce/dialogs.dart' show openFolder;
 import '../ecommerce/section.dart' show imageTypeGroup;
 import '../l10n/l10n.dart';
+import '../src/rust/api/common.dart' show ErrorKind;
+import '../platform/android_files.dart';
 import '../widgets/thumb.dart';
 import 'settings_panel.dart';
 import 'state.dart';
@@ -26,11 +28,23 @@ class _NormalPageState extends State<NormalPage> {
   NormalState get s => widget.state;
 
   Future<void> _addFiles() async {
+    if (AndroidFiles.supported) {
+      await s.addImported(await AndroidFiles.instance.pickImages());
+      return;
+    }
     final f = await openFiles(acceptedTypeGroups: [imageTypeGroup(context.l)]);
     if (f.isNotEmpty) await s.addPaths(f.map((x) => x.path).toList());
   }
 
   Future<void> _addFolder() async {
+    if (AndroidFiles.supported) {
+      final t = await AndroidFiles.instance.pickFolder();
+      if (t == null) return;
+      await s.addImported(
+        await AndroidFiles.instance.importTree(t, recursive: true),
+      );
+      return;
+    }
     final d = await getDirectoryPath();
     if (d != null) await s.addPaths([d]);
   }
@@ -42,7 +56,11 @@ class _NormalPageState extends State<NormalPage> {
         builder: (context) => AlertDialog(
           icon: const Icon(Icons.warning_amber_rounded),
           title: Text(context.l.overwriteTitle),
-          content: Text(context.l.overwriteBody),
+          content: Text(
+            AndroidFiles.supported
+                ? context.l.overwriteBodyAndroid
+                : context.l.overwriteBody,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -213,8 +231,12 @@ class _NormalPageState extends State<NormalPage> {
     final theme = Theme.of(context);
     final l = context.l;
     String text;
+    Color? color;
     if (s.running) {
       text = l.ecomEncoding(s.doneCount, s.runTotal);
+    } else if (s.blockReason == NormalBlock.needOutputFolder) {
+      text = l.blockNeedOutputFolder;
+      color = theme.colorScheme.error;
     } else {
       final total = s.items.fold<int>(0, (a, i) => a + i.originalSize);
       text = l.normalStatusIdle(s.items.length, formatBytes(total));
@@ -239,7 +261,10 @@ class _NormalPageState extends State<NormalPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(text, style: theme.textTheme.bodySmall),
+              child: Text(
+                text,
+                style: theme.textTheme.bodySmall?.copyWith(color: color),
+              ),
             ),
           ),
         ],
@@ -372,7 +397,11 @@ class _FileTable extends StatelessWidget {
                 final saving = it.saving;
                 final (statusText, statusColor) = switch (it.status) {
                   ItemStatus.pending => (
-                    it.loadError != null ? l.unreadable : '',
+                    it.loadError?.kind == ErrorKind.unsupported
+                        ? l.heicUnsupportedShort
+                        : it.loadError != null
+                        ? l.unreadable
+                        : '',
                     it.loadError != null ? scheme.error : null,
                   ),
                   ItemStatus.working => (l.statusWorking, scheme.primary),
@@ -407,7 +436,7 @@ class _FileTable extends StatelessWidget {
                         cell(
                           0,
                           Hint(
-                            message: it.output ?? it.path,
+                            message: it.output ?? it.location,
                             waitDuration: const Duration(milliseconds: 600),
                             child: Text(
                               it.name,
@@ -459,7 +488,8 @@ class _FileTable extends StatelessWidget {
                           Hint(
                             message: [
                               if (it.error != null) errorText(l, it.error),
-                              ?it.loadError,
+                              if (it.loadError != null)
+                                errorText(l, it.loadError),
                               for (final w in it.warnings) warningText(l, w),
                             ].join('\n'),
                             child: Text(

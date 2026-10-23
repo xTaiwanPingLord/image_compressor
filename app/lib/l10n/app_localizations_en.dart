@@ -630,4 +630,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get colonSep => ': ';
+
+  @override
+  String get heicUnsupportedShort => 'HEIC not supported';
+
+  @override
+  String get errHeifWindows =>
+      'This PC can\'t read HEIC: install \"HEIF Image Extensions\" and \"HEVC Video Extensions\" from the Microsoft Store';
+
+  @override
+  String get errHeifLinux =>
+      'Can\'t read HEIC: install libheif1 and libheif-plugin-libde265';
+
+  @override
+  String get errHeifAndroid =>
+      'This device can\'t read HEIC (requires Android 11 or later)';
+
+  @override
+  String get errHeifOther => 'HEIC isn\'t supported on this platform yet';
+
+  @override
+  String get aboutHeicOk => 'HEIC: supported (system decoder)';
+
+  @override
+  String get aboutHeicNo => 'HEIC: not available';
+
+  @override
+  String get blockNoOutputFolder => 'Choose an output folder';
+
+  @override
+  String get blockNeedOutputFolder =>
+      'Some images weren\'t added from a folder; choose a folder under Output';
+
+  @override
+  String get chooseOutputFolder => 'Choose output folder';
+
+  @override
+  String outputTo(String name) {
+    return 'Output to: $name';
+  }
+
+  @override
+  String sharedToWhich(int count) {
+    return 'Add $count images to which section?';
+  }
+
+  @override
+  String get overwriteBodyAndroid =>
+      'The output folder is the same as the originals and there\'s no suffix. Originals will be moved to an _old subfolder before the compressed files are written. Continue?';
+
+  @override
+  String get overwriteWarningAndroid =>
+      'Same folder with no suffix overwrites originals (they\'re moved to _old first)';
 }

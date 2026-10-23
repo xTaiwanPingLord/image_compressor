@@ -586,6 +586,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get colonSep => '：';
+
+  @override
+  String get heicUnsupportedShort => '不支援 HEIC';
+
+  @override
+  String get errHeifWindows =>
+      '此電腦無法讀取 HEIC：請從 Microsoft Store 安裝「HEIF 影像延伸模組」與「HEVC 視訊延伸模組」';
+
+  @override
+  String get errHeifLinux => '無法讀取 HEIC：請安裝 libheif1 與 libheif-plugin-libde265';
+
+  @override
+  String get errHeifAndroid => '此裝置無法讀取 HEIC（需要 Android 11 以上）';
+
+  @override
+  String get errHeifOther => '此平台目前無法讀取 HEIC';
+
+  @override
+  String get aboutHeicOk => 'HEIC：可讀取（使用系統解碼器）';
+
+  @override
+  String get aboutHeicNo => 'HEIC：無法讀取';
+
+  @override
+  String get blockNoOutputFolder => '請選擇輸出資料夾';
+
+  @override
+  String get blockNeedOutputFolder => '有圖片不是從資料夾加入，請在「輸出」中指定資料夾';
+
+  @override
+  String get chooseOutputFolder => '選擇輸出資料夾';
+
+  @override
+  String outputTo(String name) {
+    return '輸出到：$name';
+  }
+
+  @override
+  String sharedToWhich(int count) {
+    return '把 $count 張圖片加入哪一區？';
+  }
+
+  @override
+  String get overwriteBodyAndroid =>
+      '輸出位置與原檔相同且沒有後綴，原檔會先移到同資料夾的 _old 子資料夾，再寫入壓縮後的檔案。要繼續嗎？';
+
+  @override
+  String get overwriteWarningAndroid => '同資料夾且無後綴：會覆寫原檔（原檔先移到 _old 子資料夾）';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1169,4 +1217,52 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get colonSep => '：';
+
+  @override
+  String get heicUnsupportedShort => '不支持 HEIC';
+
+  @override
+  String get errHeifWindows =>
+      '此电脑无法读取 HEIC：请从 Microsoft Store 安装“HEIF 图像扩展”和“HEVC 视频扩展”';
+
+  @override
+  String get errHeifLinux => '无法读取 HEIC：请安装 libheif1 和 libheif-plugin-libde265';
+
+  @override
+  String get errHeifAndroid => '此设备无法读取 HEIC（需要 Android 11 及以上）';
+
+  @override
+  String get errHeifOther => '此平台目前无法读取 HEIC';
+
+  @override
+  String get aboutHeicOk => 'HEIC：可读取（使用系统解码器）';
+
+  @override
+  String get aboutHeicNo => 'HEIC：无法读取';
+
+  @override
+  String get blockNoOutputFolder => '请选择输出文件夹';
+
+  @override
+  String get blockNeedOutputFolder => '有图片不是从文件夹添加的，请在“输出”中指定文件夹';
+
+  @override
+  String get chooseOutputFolder => '选择输出文件夹';
+
+  @override
+  String outputTo(String name) {
+    return '输出到：$name';
+  }
+
+  @override
+  String sharedToWhich(int count) {
+    return '把 $count 张图片添加到哪个区？';
+  }
+
+  @override
+  String get overwriteBodyAndroid =>
+      '输出位置与原文件相同且没有后缀，原文件会先移到同文件夹的 _old 子文件夹，再写入压缩后的文件。要继续吗？';
+
+  @override
+  String get overwriteWarningAndroid => '同文件夹且无后缀：会覆盖原文件（原文件先移到 _old 子文件夹）';
 }

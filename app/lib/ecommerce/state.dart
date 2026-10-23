@@ -1,30 +1,36 @@
 // ignore_for_file: prefer_initializing_formals
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../platform/android_files.dart';
 import '../src/rust/api/common.dart';
 import '../src/rust/api/ecommerce.dart';
 import '../src/rust/api/files.dart';
 
 /// 清單中的一張圖。
 class EcomItem {
-  EcomItem(this.path) : id = _nextId++;
+  EcomItem(this.path, {this.source}) : id = _nextId++;
 
   static int _nextId = 0;
 
   final int id;
   final String path;
+
+  /// Android：來自哪個授權資料夾（從資料夾加入才有）
+  final AndroidSource? source;
   int width = 0;
   int height = 0;
   int fileSize = 0;
-  String? error;
+  AppError? error;
   bool loaded = false;
   Fit fit = Fit.pad;
 
-  String get name => p.basename(path);
+  String get name => source?.name ?? p.basename(path);
 }
 
 enum RunPhase { idle, running }
@@ -38,6 +44,9 @@ enum EcomBlock {
   noImages,
   loading,
   unreadable,
+
+  /// Android：沒有可寫入的輸出資料夾
+  noOutputFolder,
 }
 
 /// 電商模式狀態。
@@ -79,6 +88,32 @@ class EcomState extends ChangeNotifier {
   static const _kChroma444 = 'ecom.chroma444';
   static const _kPlatforms = 'ecom.platforms';
   static const _kDefaultFit = 'ecom.defaultFit';
+  static const _kAndroidOut = 'ecom.androidOut';
+
+  /// Android：使用者指定的輸出資料夾（圖片不是從資料夾加入時使用）
+  TreeRef? androidOut;
+
+  /// Android：實際輸出的資料夾 = 圖片最多的來源資料夾，否則為指定的輸出資料夾。
+  TreeRef? get androidTarget {
+    final count = <TreeRef, int>{};
+    for (final it in sections.values.expand((l) => l)) {
+      final t = it.source?.tree;
+      if (t != null) count[t] = (count[t] ?? 0) + 1;
+    }
+    if (count.isEmpty) return androidOut;
+    return count.entries.reduce((a, b) => b.value > a.value ? b : a).key;
+  }
+
+  void setAndroidOut(TreeRef? t) {
+    androidOut = t;
+    final s = _prefs;
+    if (s != null) {
+      t == null
+          ? s.remove(_kAndroidOut)
+          : s.setString(_kAndroidOut, jsonEncode(t.toJson()));
+    }
+    notifyListeners();
+  }
 
   void _loadPrefs() {
     final s = _prefs;
@@ -100,6 +135,10 @@ class EcomState extends ChangeNotifier {
         ..addAll(ShopPlatform.values.where((x) => pf.contains(x.name)));
     }
     defaultFit = s.getString(_kDefaultFit) == 'crop' ? Fit.crop : Fit.pad;
+    try {
+      final raw = s.getString(_kAndroidOut);
+      if (raw != null) androidOut = TreeRef.fromJson(jsonDecode(raw));
+    } catch (_) {}
   }
 
   void _savePrefs() {
@@ -164,6 +203,27 @@ class EcomState extends ChangeNotifier {
     final at = (index ?? list.length).clamp(0, list.length);
     list.insertAll(at, items);
     if (name.trim().isEmpty) name = guessName(items.first.path);
+    notifyListeners();
+    await Future.wait(items.map(_loadMeta));
+  }
+
+  /// Android：加入已複製到快取的圖片（資料夾匯入時保留來源資訊）。
+  Future<void> addImported(
+    ImgCategory cat,
+    List<ImportedFile> files, {
+    int? index,
+  }) async {
+    if (files.isEmpty) return;
+    final sorted = sortNatural(paths: [for (final f in files) f.path]);
+    final byPath = {for (final f in files) f.path: f};
+    final items = [
+      for (final path in sorted)
+        EcomItem(path, source: byPath[path]!.source)..fit = defaultFit,
+    ];
+    final list = sections[cat]!;
+    final at = (index ?? list.length).clamp(0, list.length);
+    list.insertAll(at, items);
+    if (name.trim().isEmpty) name = guessName(items.first.name);
     notifyListeners();
     await Future.wait(items.map(_loadMeta));
   }
@@ -247,6 +307,9 @@ class EcomState extends ChangeNotifier {
     if (totalCount == 0) return EcomBlock.noImages;
     if (!allLoaded) return EcomBlock.loading;
     if (hasErrors) return EcomBlock.unreadable;
+    if (AndroidFiles.supported && androidTarget == null) {
+      return EcomBlock.noOutputFolder;
+    }
     return null;
   }
 
@@ -261,6 +324,7 @@ class EcomState extends ChangeNotifier {
     desc: sections[ImgCategory.desc]!.map((i) => i.path).toList(),
     platforms: ShopPlatform.values.where(platforms.contains).toList(),
     settings: settings,
+    outputRoot: null,
   );
 
   /// 執行；回傳最後一個進度（Done 或 Failed）。
@@ -270,17 +334,51 @@ class EcomState extends ChangeNotifier {
     notifyListeners();
     EcomProgress? last;
     try {
-      await for (final ev in runEcommerce(job: buildJob(), dryRun: dryRun)) {
+      final android = AndroidFiles.supported;
+      final target = androidTarget;
+      var job = buildJob();
+      String? staging;
+      if (android) {
+        staging = await AndroidFiles.instance.newExportDir();
+        job = EcomJob(
+          name: job.name,
+          main: job.main,
+          variant: job.variant,
+          desc: job.desc,
+          platforms: job.platforms,
+          settings: job.settings,
+          outputRoot: staging,
+        );
+      }
+      await for (final ev in runEcommerce(job: job, dryRun: dryRun)) {
         last = ev;
         progress = ev;
         notifyListeners();
+      }
+      final r = last?.report;
+      if (android &&
+          !dryRun &&
+          last?.stage == EcomStage.done &&
+          r != null &&
+          r.overflow.isEmpty &&
+          target != null) {
+        last = EcomProgress(
+          stage: EcomStage.done,
+          done: last!.done,
+          total: last.total,
+          report: await _exportAndroid(job.name, r, staging!, target),
+        );
+        progress = last;
       }
     } catch (e) {
       last = EcomProgress(
         stage: EcomStage.failed,
         done: 0,
         total: 0,
-        error: AppError(kind: ErrorKind.other, detail: e.toString()),
+        error: AppError(
+          kind: e is PlatformException ? ErrorKind.io : ErrorKind.other,
+          detail: e is PlatformException ? (e.message ?? e.code) : e.toString(),
+        ),
       );
     } finally {
       phase = RunPhase.idle;
@@ -294,4 +392,48 @@ class EcomState extends ChangeNotifier {
           error: AppError(kind: ErrorKind.other, detail: ''),
         );
   }
+
+  /// Android：把暫存輸出寫回使用者資料夾（先把同類別的舊檔移到 _old/）。
+  Future<EcomReport> _exportAndroid(
+    String name,
+    EcomReport r,
+    String staging,
+    TreeRef tree,
+  ) async {
+    final af = AndroidFiles.instance;
+    var disposed = 0;
+    final pfs = r.outputs.map((o) => o.platform).toSet().toList()
+      ..sort((a, b) => a.index.compareTo(b.index));
+    for (final pf in pfs) {
+      final outs = r.outputs.where((o) => o.platform == pf).toList();
+      final dir = pf.name; // shopee / momo
+      final cats = outs.map((o) => _catPrefix(o.category)).toSet().join('|');
+      disposed += await af.moveToOld(
+        tree,
+        dir,
+        '^${RegExp.escape(name)}_($cats)_\\d+\\.jpg\$',
+      );
+      for (final o in outs) {
+        await af.writeFile(
+          tree,
+          '$dir/${o.fileName}',
+          p.join(staging, dir, o.fileName),
+        );
+      }
+    }
+    return EcomReport(
+      outputRoot: encodeTreeDir(tree, ''),
+      descCounts: r.descCounts,
+      overflow: r.overflow,
+      outputs: r.outputs,
+      writtenCount: r.writtenCount,
+      disposedCount: disposed,
+    );
+  }
+
+  static String _catPrefix(ImgCategory c) => switch (c) {
+    ImgCategory.main => 'main',
+    ImgCategory.variant => 'variant',
+    ImgCategory.desc => 'desc',
+  };
 }

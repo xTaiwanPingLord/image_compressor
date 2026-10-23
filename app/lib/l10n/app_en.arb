@@ -173,5 +173,19 @@
   "fontSample": "Image Compressor 圖片壓縮 0123",
   "setAbout": "About",
   "aboutFontCredit": "Bundled fonts: MiSans, MiSans TC (Xiaomi MiSans, free for commercial use)",
-  "colonSep": ": "
+  "colonSep": ": ",
+  "heicUnsupportedShort": "HEIC not supported",
+  "errHeifWindows": "This PC can't read HEIC: install \"HEIF Image Extensions\" and \"HEVC Video Extensions\" from the Microsoft Store",
+  "errHeifLinux": "Can't read HEIC: install libheif1 and libheif-plugin-libde265",
+  "errHeifAndroid": "This device can't read HEIC (requires Android 11 or later)",
+  "errHeifOther": "HEIC isn't supported on this platform yet",
+  "aboutHeicOk": "HEIC: supported (system decoder)",
+  "aboutHeicNo": "HEIC: not available",
+  "blockNoOutputFolder": "Choose an output folder",
+  "blockNeedOutputFolder": "Some images weren't added from a folder; choose a folder under Output",
+  "chooseOutputFolder": "Choose output folder",
+  "outputTo": "Output to: {name}",
+  "sharedToWhich": "Add {count} images to which section?",
+  "overwriteBodyAndroid": "The output folder is the same as the originals and there's no suffix. Originals will be moved to an _old subfolder before the compressed files are written. Continue?",
+  "overwriteWarningAndroid": "Same folder with no suffix overwrites originals (they're moved to _old first)"
 }

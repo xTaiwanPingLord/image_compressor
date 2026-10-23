@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
+import '../src/rust/api/files.dart' show heifSupported, heifSelfTest;
 import 'app_settings.dart';
 import 'theme.dart';
 
@@ -140,6 +141,8 @@ class SettingsPage extends StatelessWidget {
                     Text(l.appTitle, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 4),
                     Text(l.aboutFontCredit, style: theme.textTheme.bodySmall),
+                    const SizedBox(height: 4),
+                    const _HeifStatus(),
                   ],
                 ),
               ),
@@ -147,6 +150,55 @@ class SettingsPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// HEIC 支援狀態（系統解碼器；第一次查詢會實際解碼一張測試圖）。
+class _HeifStatus extends StatelessWidget {
+  const _HeifStatus();
+  static Future<bool>? _f;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l;
+    final small = Theme.of(context).textTheme.bodySmall;
+    return FutureBuilder<bool>(
+      future: _f ??= heifSupported(),
+      builder: (context, snap) {
+        if (!snap.hasData) return Text('HEIC…', style: small);
+        // 點一下顯示解碼自我測試結果（診斷用）
+        return InkWell(
+          onTap: () async {
+            final lines = await heifSelfTest();
+            if (!context.mounted) return;
+            await showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('HEIC self-test'),
+                content: SelectableText(
+                  lines.join('\n'),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(l.close),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: Text(
+            snap.data!
+                ? l.aboutHeicOk
+                : '${l.aboutHeicNo}${l.colonSep}${heifUnsupportedText(l)}',
+            style: snap.data!
+                ? small
+                : small?.copyWith(color: Theme.of(context).colorScheme.error),
+          ),
+        );
+      },
     );
   }
 }

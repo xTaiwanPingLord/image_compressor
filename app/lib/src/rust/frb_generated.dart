@@ -72,7 +72,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 352396021;
+  int get rustContentHash => -1412934403;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -97,6 +97,10 @@ abstract class RustLibApi extends BaseApi {
   EcomSettings crateApiEcommerceDefaultSettings();
 
   int crateApiEcommerceDescLimit({required ShopPlatform platform});
+
+  Future<List<String>> crateApiFilesHeifSelfTest();
+
+  Future<bool> crateApiFilesHeifSupported();
 
   Future<ImageMeta> crateApiFilesImageMeta({required String path});
 
@@ -273,6 +277,60 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "desc_limit", argNames: ["platform"]);
 
   @override
+  Future<List<String>> crateApiFilesHeifSelfTest() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFilesHeifSelfTestConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFilesHeifSelfTestConstMeta =>
+      const TaskConstMeta(debugName: "heif_self_test", argNames: []);
+
+  @override
+  Future<bool> crateApiFilesHeifSupported() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiFilesHeifSupportedConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiFilesHeifSupportedConstMeta =>
+      const TaskConstMeta(debugName: "heif_supported", argNames: []);
+
+  @override
   Future<ImageMeta> crateApiFilesImageMeta({required String path}) {
     return handler.executeNormal(
       NormalTask(
@@ -282,7 +340,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 8,
             port: port_,
           );
         },
@@ -309,7 +367,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 9,
             port: port_,
           );
         },
@@ -335,7 +393,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(a, serializer);
           sse_encode_String(b, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 10)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_i_32,
@@ -366,7 +424,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_img_category(category, serializer);
           sse_encode_u_32(width, serializer);
           sse_encode_u_32(height, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
@@ -399,7 +457,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 12,
             port: port_,
           );
         },
@@ -437,7 +495,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 11,
+              funcId: 13,
               port: port_,
             );
           },
@@ -477,7 +535,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 12,
+              funcId: 14,
               port: port_,
             );
           },
@@ -506,7 +564,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_String(paths, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 13)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 15)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_String,
@@ -536,7 +594,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 16,
             port: port_,
           );
         },
@@ -666,8 +724,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   EcomJob dco_decode_ecom_job(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 6)
-      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return EcomJob(
       name: dco_decode_String(arr[0]),
       main: dco_decode_list_ecom_input(arr[1]),
@@ -675,6 +733,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       desc: dco_decode_list_String(arr[3]),
       platforms: dco_decode_list_shop_platform(arr[4]),
       settings: dco_decode_ecom_settings(arr[5]),
+      outputRoot: dco_decode_opt_String(arr[6]),
     );
   }
 
@@ -792,7 +851,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       width: dco_decode_u_32(arr[1]),
       height: dco_decode_u_32(arr[2]),
       fileSize: dco_decode_u_64(arr[3]),
-      error: dco_decode_opt_String(arr[4]),
+      error: dco_decode_opt_box_autoadd_app_error(arr[4]),
     );
   }
 
@@ -1136,6 +1195,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_desc = sse_decode_list_String(deserializer);
     var var_platforms = sse_decode_list_shop_platform(deserializer);
     var var_settings = sse_decode_ecom_settings(deserializer);
+    var var_outputRoot = sse_decode_opt_String(deserializer);
     return EcomJob(
       name: var_name,
       main: var_main,
@@ -1143,6 +1203,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       desc: var_desc,
       platforms: var_platforms,
       settings: var_settings,
+      outputRoot: var_outputRoot,
     );
   }
 
@@ -1275,7 +1336,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_width = sse_decode_u_32(deserializer);
     var var_height = sse_decode_u_32(deserializer);
     var var_fileSize = sse_decode_u_64(deserializer);
-    var var_error = sse_decode_opt_String(deserializer);
+    var var_error = sse_decode_opt_box_autoadd_app_error(deserializer);
     return ImageMeta(
       path: var_path,
       width: var_width,
@@ -1741,6 +1802,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_list_String(self.desc, serializer);
     sse_encode_list_shop_platform(self.platforms, serializer);
     sse_encode_ecom_settings(self.settings, serializer);
+    sse_encode_opt_String(self.outputRoot, serializer);
   }
 
   @protected
@@ -1833,7 +1895,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.width, serializer);
     sse_encode_u_32(self.height, serializer);
     sse_encode_u_64(self.fileSize, serializer);
-    sse_encode_opt_String(self.error, serializer);
+    sse_encode_opt_box_autoadd_app_error(self.error, serializer);
   }
 
   @protected

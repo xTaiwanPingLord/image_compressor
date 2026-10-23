@@ -132,6 +132,8 @@ pub struct EcomJob {
     pub desc: Vec<String>,
     pub platforms: Vec<ShopPlatform>,
     pub settings: EcomSettings,
+    /// 指定輸出根目錄（其下建 shopee/、momo/）；None = 來源資料夾。Android 用暫存資料夾。
+    pub output_root: Option<String>,
 }
 
 pub struct OutputInfo {
@@ -223,7 +225,7 @@ fn to_core(job: EcomJob) -> ec::Job {
             chroma444: job.settings.chroma444,
             ..ec::Settings::default()
         },
-        output_root: None,
+        output_root: job.output_root.map(PathBuf::from),
     }
 }
 

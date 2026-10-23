@@ -85,6 +85,9 @@ class EcomJob {
   final List<ShopPlatform> platforms;
   final EcomSettings settings;
 
+  /// 指定輸出根目錄（其下建 shopee/、momo/）；None = 來源資料夾。Android 用暫存資料夾。
+  final String? outputRoot;
+
   const EcomJob({
     required this.name,
     required this.main,
@@ -92,6 +95,7 @@ class EcomJob {
     required this.desc,
     required this.platforms,
     required this.settings,
+    this.outputRoot,
   });
 
   @override
@@ -101,7 +105,8 @@ class EcomJob {
       variant.hashCode ^
       desc.hashCode ^
       platforms.hashCode ^
-      settings.hashCode;
+      settings.hashCode ^
+      outputRoot.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -113,7 +118,8 @@ class EcomJob {
           variant == other.variant &&
           desc == other.desc &&
           platforms == other.platforms &&
-          settings == other.settings;
+          settings == other.settings &&
+          outputRoot == other.outputRoot;
 }
 
 class EcomProgress {

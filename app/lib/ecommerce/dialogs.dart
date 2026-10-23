@@ -4,11 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
+import '../platform/android_files.dart';
 import '../src/rust/api/ecommerce.dart';
 import 'state.dart';
 
 /// 用系統檔案管理員開啟資料夾。
 Future<void> openFolder(String path) async {
+  final tree = decodeTreeDir(path);
+  if (tree != null) {
+    await AndroidFiles.instance.openTree(tree.$1, tree.$2);
+    return;
+  }
   if (Platform.isWindows) {
     await Process.run('explorer', [path]);
   } else if (Platform.isMacOS) {
@@ -306,7 +312,10 @@ class _ResultDialog extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(report.outputRoot, style: theme.textTheme.bodySmall),
+            Text(
+              treeDirLabel(report.outputRoot),
+              style: theme.textTheme.bodySmall,
+            ),
             if (report.disposedCount > 0)
               Text(
                 l.ecomDisposed(report.disposedCount),
@@ -348,10 +357,13 @@ class _ResultDialog extends StatelessWidget {
           onPressed: () {
             final dirs = platforms.map((p) => p.name).toList();
             final sep = Platform.pathSeparator;
+            final tree = decodeTreeDir(report.outputRoot);
             openFolder(
-              dirs.length == 1
-                  ? '${report.outputRoot}$sep${dirs.first}'
-                  : report.outputRoot,
+              dirs.length != 1
+                  ? report.outputRoot
+                  : tree != null
+                  ? encodeTreeDir(tree.$1, dirs.first)
+                  : '${report.outputRoot}$sep${dirs.first}',
             );
           },
           child: Text(l.openFolder),

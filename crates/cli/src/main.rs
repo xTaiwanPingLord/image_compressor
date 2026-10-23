@@ -137,6 +137,8 @@ enum Cmd {
     },
     /// 顯示圖片尺寸及各平台是否需選擇補白/裁切
     Info { files: Vec<PathBuf> },
+    /// 檢查此電腦能否解碼 HEIC（系統解碼器自我測試）
+    HeifCheck,
 }
 
 fn expand(paths: &[PathBuf], keep_order: bool) -> Result<Vec<PathBuf>, String> {
@@ -448,6 +450,20 @@ fn main() -> ExitCode {
             } else {
                 ExitCode::SUCCESS
             }
+        }
+        Cmd::HeifCheck => {
+            println!("HEIC supported: {}", imgcore::heif::supported());
+            let mut ok = true;
+            for (name, r) in imgcore::heif::self_test() {
+                match r {
+                    Ok(m) => println!("  OK   {name}: {m}"),
+                    Err(e) => {
+                        ok = false;
+                        println!("  FAIL {name}: {e}");
+                    }
+                }
+            }
+            if ok { ExitCode::SUCCESS } else { ExitCode::FAILURE }
         }
         Cmd::Info { files } => {
             let mut ok = true;

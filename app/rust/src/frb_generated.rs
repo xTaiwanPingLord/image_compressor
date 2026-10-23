@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 352396021;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1412934403;
 
 // Section: executor
 
@@ -199,6 +199,70 @@ fn wire__crate__api__ecommerce__desc_limit_impl(
                 let output_ok = Ok::<_, ()>(crate::api::ecommerce::desc_limit(api_platform))?;
                 std::result::Result::Ok(output_ok)
             })())
+        },
+    )
+}
+fn wire__crate__api__files__heif_self_test_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "heif_self_test",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Ok::<_, ()>(crate::api::files::heif_self_test())?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__files__heif_supported_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "heif_supported",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Ok::<_, ()>(crate::api::files::heif_supported())?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
         },
     )
 }
@@ -630,6 +694,7 @@ impl SseDecode for crate::api::ecommerce::EcomJob {
         let mut var_platforms =
             <Vec<crate::api::ecommerce::ShopPlatform>>::sse_decode(deserializer);
         let mut var_settings = <crate::api::ecommerce::EcomSettings>::sse_decode(deserializer);
+        let mut var_outputRoot = <Option<String>>::sse_decode(deserializer);
         return crate::api::ecommerce::EcomJob {
             name: var_name,
             main: var_main,
@@ -637,6 +702,7 @@ impl SseDecode for crate::api::ecommerce::EcomJob {
             desc: var_desc,
             platforms: var_platforms,
             settings: var_settings,
+            output_root: var_outputRoot,
         };
     }
 }
@@ -726,7 +792,8 @@ impl SseDecode for crate::api::common::ErrorKind {
             2 => crate::api::common::ErrorKind::Encode,
             3 => crate::api::common::ErrorKind::Invalid,
             4 => crate::api::common::ErrorKind::Trash,
-            5 => crate::api::common::ErrorKind::Other,
+            5 => crate::api::common::ErrorKind::Unsupported,
+            6 => crate::api::common::ErrorKind::Other,
             _ => unreachable!("Invalid variant for ErrorKind: {}", inner),
         };
     }
@@ -804,7 +871,7 @@ impl SseDecode for crate::api::files::ImageMeta {
         let mut var_width = <u32>::sse_decode(deserializer);
         let mut var_height = <u32>::sse_decode(deserializer);
         let mut var_fileSize = <u64>::sse_decode(deserializer);
-        let mut var_error = <Option<String>>::sse_decode(deserializer);
+        let mut var_error = <Option<crate::api::common::AppError>>::sse_decode(deserializer);
         return crate::api::files::ImageMeta {
             path: var_path,
             width: var_width,
@@ -1209,12 +1276,14 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        6 => wire__crate__api__files__image_meta_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__files__init_app_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__normal__preview_compress_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__ecommerce__run_ecommerce_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__normal__run_normal_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__files__thumbnail_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__files__heif_self_test_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__files__heif_supported_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__files__image_meta_impl(port, ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__files__init_app_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__normal__preview_compress_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__ecommerce__run_ecommerce_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__normal__run_normal_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__files__thumbnail_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1230,9 +1299,9 @@ fn pde_ffi_dispatcher_sync_impl(
         3 => wire__crate__api__normal__default_normal_options_impl(ptr, rust_vec_len, data_len),
         4 => wire__crate__api__ecommerce__default_settings_impl(ptr, rust_vec_len, data_len),
         5 => wire__crate__api__ecommerce__desc_limit_impl(ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__files__natural_compare_impl(ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__ecommerce__needs_fit_choice_impl(ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__files__sort_natural_impl(ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__files__natural_compare_impl(ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__ecommerce__needs_fit_choice_impl(ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__files__sort_natural_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1332,6 +1401,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::ecommerce::EcomJob {
             self.desc.into_into_dart().into_dart(),
             self.platforms.into_into_dart().into_dart(),
             self.settings.into_into_dart().into_dart(),
+            self.output_root.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1455,7 +1525,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::common::ErrorKind {
             Self::Encode => 2.into_dart(),
             Self::Invalid => 3.into_dart(),
             Self::Trash => 4.into_dart(),
-            Self::Other => 5.into_dart(),
+            Self::Unsupported => 5.into_dart(),
+            Self::Other => 6.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -1890,6 +1961,7 @@ impl SseEncode for crate::api::ecommerce::EcomJob {
         <Vec<String>>::sse_encode(self.desc, serializer);
         <Vec<crate::api::ecommerce::ShopPlatform>>::sse_encode(self.platforms, serializer);
         <crate::api::ecommerce::EcomSettings>::sse_encode(self.settings, serializer);
+        <Option<String>>::sse_encode(self.output_root, serializer);
     }
 }
 
@@ -1958,7 +2030,8 @@ impl SseEncode for crate::api::common::ErrorKind {
                 crate::api::common::ErrorKind::Encode => 2,
                 crate::api::common::ErrorKind::Invalid => 3,
                 crate::api::common::ErrorKind::Trash => 4,
-                crate::api::common::ErrorKind::Other => 5,
+                crate::api::common::ErrorKind::Unsupported => 5,
+                crate::api::common::ErrorKind::Other => 6,
                 _ => {
                     unimplemented!("");
                 }
@@ -2037,7 +2110,7 @@ impl SseEncode for crate::api::files::ImageMeta {
         <u32>::sse_encode(self.width, serializer);
         <u32>::sse_encode(self.height, serializer);
         <u64>::sse_encode(self.file_size, serializer);
-        <Option<String>>::sse_encode(self.error, serializer);
+        <Option<crate::api::common::AppError>>::sse_encode(self.error, serializer);
     }
 }
 

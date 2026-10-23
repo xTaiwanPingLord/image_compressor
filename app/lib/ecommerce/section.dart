@@ -3,6 +3,8 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
+import '../platform/android_files.dart';
+import '../src/rust/api/common.dart';
 import '../src/rust/api/ecommerce.dart';
 import '../widgets/thumb.dart';
 import 'state.dart';
@@ -10,7 +12,19 @@ import '../widgets/hint.dart';
 
 XTypeGroup imageTypeGroup(AppLocalizations l) => XTypeGroup(
   label: l.imagesTypeLabel,
-  extensions: const ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tif', 'tiff', 'gif'],
+  extensions: const [
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+    'bmp',
+    'tif',
+    'tiff',
+    'gif',
+    'heic',
+    'heif',
+    'hif',
+  ],
 );
 
 /// 一個區塊：標題列 + 格狀縮圖；可拖放檔案、拖曳排序、跨區移動。
@@ -40,6 +54,11 @@ class _EcomSectionState extends State<EcomSection> {
   List<EcomItem> get items => s.sections[widget.category]!;
 
   Future<void> _pickFiles() async {
+    if (AndroidFiles.supported) {
+      final f = await AndroidFiles.instance.pickImages();
+      await s.addImported(widget.category, f);
+      return;
+    }
     final files = await openFiles(
       acceptedTypeGroups: [imageTypeGroup(context.l)],
     );
@@ -48,6 +67,13 @@ class _EcomSectionState extends State<EcomSection> {
   }
 
   Future<void> _pickFolder() async {
+    if (AndroidFiles.supported) {
+      final t = await AndroidFiles.instance.pickFolder();
+      if (t == null) return;
+      final f = await AndroidFiles.instance.importTree(t);
+      await s.addImported(widget.category, f);
+      return;
+    }
     final dir = await getDirectoryPath();
     if (dir == null) return;
     await s.addPaths(widget.category, [dir]);
@@ -262,7 +288,11 @@ class _ItemTileState extends State<_ItemTile> {
           ),
           const SizedBox(height: 4),
           Hint(
-            message: it.path,
+            message: it.error != null
+                ? '${it.name}\n${errorText(context.l, it.error)}'
+                : it.source == null
+                ? it.name
+                : '${it.source!.tree.name}/${it.source!.relDir.isEmpty ? '' : '${it.source!.relDir}/'}${it.name}',
             child: Text(
               it.name,
               maxLines: 1,
@@ -271,7 +301,9 @@ class _ItemTileState extends State<_ItemTile> {
             ),
           ),
           Text(
-            it.error != null
+            it.error?.kind == ErrorKind.unsupported
+                ? context.l.heicUnsupportedShort
+                : it.error != null
                 ? context.l.unreadable
                 : it.loaded
                 ? '${it.width}×${it.height}'

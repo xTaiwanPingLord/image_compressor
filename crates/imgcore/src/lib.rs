@@ -8,6 +8,7 @@ pub mod ecommerce;
 pub mod encode;
 pub mod exif;
 pub mod geom;
+pub mod heif;
 pub mod jpeg_lossless;
 pub mod load;
 pub mod natsort;
@@ -28,6 +29,9 @@ pub enum Error {
     Invalid(String),
     #[error("移到垃圾桶失敗：{0}")]
     Trash(String),
+    /// 此平台不支援的格式（目前只有 "heif"）
+    #[error("此平台無法讀取 {0} 格式")]
+    Unsupported(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -39,6 +43,7 @@ pub enum ErrorKind {
     Encode,
     Invalid,
     Trash,
+    Unsupported,
 }
 
 /// 可複製的錯誤資訊：kind + 不含前綴的細節；message 為完整中文訊息（CLI 用）。
@@ -64,6 +69,7 @@ impl From<&Error> for ErrorInfo {
             Error::Encode(m) => (ErrorKind::Encode, m.clone()),
             Error::Invalid(m) => (ErrorKind::Invalid, m.clone()),
             Error::Trash(m) => (ErrorKind::Trash, m.clone()),
+            Error::Unsupported(m) => (ErrorKind::Unsupported, m.clone()),
         };
         Self {
             kind,

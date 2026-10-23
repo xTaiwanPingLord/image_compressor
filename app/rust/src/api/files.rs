@@ -1,6 +1,7 @@
 //! 檔案與縮圖相關 API。
 
-use imgcore::{geom, load, natsort};
+use crate::api::common::AppError;
+use imgcore::{geom, heif, load, natsort};
 use std::path::{Path, PathBuf};
 
 #[flutter_rust_bridge::frb(init)]
@@ -46,15 +47,46 @@ pub struct ImageMeta {
     pub width: u32,
     pub height: u32,
     pub file_size: u64,
-    /// 讀取失敗時的錯誤訊息
-    pub error: Option<String>,
+    /// 讀取失敗（含此平台無法解碼 HEIC）
+    pub error: Option<AppError>,
+}
+
+/// 此平台能否解碼 HEIC / HEIF（第一次呼叫會做一次實際解碼測試）。
+pub fn heif_supported() -> bool {
+    heif::supported()
+}
+
+/// HEIC 解碼自我測試（診斷用）：每行「OK/FAIL 項目: 說明」。
+pub fn heif_self_test() -> Vec<String> {
+    heif::self_test()
+        .into_iter()
+        .map(|(name, r)| match r {
+            Ok(m) => format!("OK   {name}: {m}"),
+            Err(e) => format!("FAIL {name}: {e}"),
+        })
+        .collect()
+}
+
+fn is_heif_file(p: &Path) -> bool {
+    use std::io::Read;
+    let mut b = [0u8; 64];
+    std::fs::File::open(p)
+        .and_then(|mut f| f.read(&mut b))
+        .map(|n| heif::is_heif(&b[..n]))
+        .unwrap_or(false)
 }
 
 /// 讀取尺寸（已考慮 EXIF 旋轉）與檔案大小。
 pub fn image_meta(path: String) -> ImageMeta {
     let p = Path::new(&path);
     let file_size = std::fs::metadata(p).map(|m| m.len()).unwrap_or(0);
-    match load::dimensions(p) {
+    // 不能解碼的 HEIC 先標成錯誤，避免加入後才失敗
+    let res = if is_heif_file(p) && !heif::supported() {
+        Err(imgcore::Error::Unsupported("HEIC".into()))
+    } else {
+        load::dimensions(p)
+    };
+    match res {
         Ok((width, height)) => ImageMeta {
             path,
             width,
@@ -67,7 +99,7 @@ pub fn image_meta(path: String) -> ImageMeta {
             width: 0,
             height: 0,
             file_size,
-            error: Some(e.to_string()),
+            error: Some((&e).into()),
         },
     }
 }

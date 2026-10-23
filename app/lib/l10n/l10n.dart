@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/widgets.dart';
 
 import '../src/rust/api/common.dart';
@@ -34,11 +36,21 @@ String errorKindText(AppLocalizations l, ErrorKind k) => switch (k) {
   ErrorKind.encode => l.errEncode,
   ErrorKind.invalid => l.errInvalid,
   ErrorKind.trash => l.errTrash,
+  ErrorKind.unsupported => heifUnsupportedText(l),
   ErrorKind.other => l.errOther,
 };
 
+/// 此平台無法讀取 HEIC 時的說明（含安裝建議）。
+String heifUnsupportedText(AppLocalizations l) {
+  if (Platform.isWindows) return l.errHeifWindows;
+  if (Platform.isLinux) return l.errHeifLinux;
+  if (Platform.isAndroid) return l.errHeifAndroid;
+  return l.errHeifOther;
+}
+
 String errorText(AppLocalizations l, AppError? e) {
   if (e == null) return l.unknownError;
+  if (e.kind == ErrorKind.unsupported) return heifUnsupportedText(l);
   final kind = errorKindText(l, e.kind);
   return e.detail.isEmpty ? kind : '$kind${l.colonSep}${e.detail}';
 }
