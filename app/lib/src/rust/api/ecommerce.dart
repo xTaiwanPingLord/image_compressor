@@ -4,6 +4,7 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'common.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
@@ -125,8 +126,8 @@ class EcomProgress {
   /// Done 時的結果
   final EcomReport? report;
 
-  /// Failed 時的錯誤訊息
-  final String? error;
+  /// Failed 時的錯誤
+  final AppError? error;
 
   const EcomProgress({
     required this.stage,
@@ -262,7 +263,7 @@ class OutputInfo {
   final int height;
   final BigInt bytes;
   final int quality;
-  final List<String> warnings;
+  final List<WarningInfo> warnings;
 
   const OutputInfo({
     required this.platform,

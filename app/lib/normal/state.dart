@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../src/rust/api/common.dart';
 import '../src/rust/api/files.dart';
 import '../src/rust/api/normal.dart';
 
@@ -116,6 +117,9 @@ class NormalSettings {
 
 enum ItemStatus { pending, working, done, keptOriginal, failed }
 
+/// 不能執行的原因。
+enum NormalBlock { running, noImages }
+
 class NormalItem {
   NormalItem(this.path, this.base) : id = _next++;
   static int _next = 0;
@@ -133,9 +137,9 @@ class NormalItem {
   int? newWidth;
   int? newHeight;
   ItemStatus status = ItemStatus.pending;
-  String? error;
+  AppError? error;
   String? output;
-  List<String> warnings = const [];
+  List<WarningInfo> warnings = const [];
 
   String get name => p.basename(path);
 
@@ -380,9 +384,10 @@ class NormalState extends ChangeNotifier {
 
   // ---------- 批次 ----------
 
-  String? get blockReason {
-    if (running) return '執行中';
-    if (items.isEmpty) return '請先加入圖片';
+  /// 不能執行的原因；可執行時回傳 null（UI 負責翻譯）。
+  NormalBlock? get blockReason {
+    if (running) return NormalBlock.running;
+    if (items.isEmpty) return NormalBlock.noImages;
     return null;
   }
 
@@ -437,7 +442,7 @@ class NormalState extends ChangeNotifier {
       for (final t in targets.where((t) => t.status == ItemStatus.working)) {
         t
           ..status = ItemStatus.failed
-          ..error = e.toString();
+          ..error = AppError(kind: ErrorKind.other, detail: e.toString());
       }
     }
     running = false;

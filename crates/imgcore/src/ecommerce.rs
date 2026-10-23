@@ -389,7 +389,7 @@ pub struct Output {
     pub bytes: usize,
     pub quality: u8,
     pub mode: encode::Mode,
-    pub warnings: Vec<String>,
+    pub warnings: Vec<crate::warn::Warn>,
     #[serde(skip)]
     pub data: Vec<u8>,
 }

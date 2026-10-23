@@ -16,7 +16,10 @@ void main() {
 
   for (final action in ['取消', '儲存']) {
     testWidgets('電商模式啟動後開設定再$action', (tester) async {
-      SharedPreferences.setMockInitialValues({'app.mode': 1});
+      SharedPreferences.setMockInitialValues({
+        'app.mode': 1,
+        'app.language': 'zhTW',
+      });
       final prefs = await SharedPreferences.getInstance();
       await tester.binding.setSurfaceSize(const Size(1280, 860));
       await tester.pumpWidget(

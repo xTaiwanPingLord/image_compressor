@@ -1,5 +1,6 @@
 //! 普通模式 API（包裝 imgcore::normal）。
 
+use crate::api::common::{warnings, AppError, WarningInfo};
 use crate::frb_generated::StreamSink;
 use imgcore::cleanup::Disposal;
 use imgcore::{load, natsort, normal as nm};
@@ -196,7 +197,7 @@ pub struct PreviewResult {
     pub height: u32,
     pub original_size: u64,
     pub quality: Option<u8>,
-    pub warnings: Vec<String>,
+    pub warnings: Vec<WarningInfo>,
 }
 
 /// 以目前設定在記憶體中壓縮（不寫檔），用於預覽與預估大小。
@@ -209,7 +210,7 @@ pub fn preview_compress(path: String, options: NormalOptions) -> anyhow::Result<
         height: c.height,
         original_size: data.len() as u64,
         quality: c.quality,
-        warnings: c.warnings,
+        warnings: warnings(&c.warnings),
         data: c.data,
     })
 }
@@ -229,8 +230,8 @@ pub struct FileResult {
     pub width: u32,
     pub height: u32,
     pub status: FileStatus,
-    pub error: Option<String>,
-    pub warnings: Vec<String>,
+    pub error: Option<AppError>,
+    pub warnings: Vec<WarningInfo>,
 }
 
 /// 批次壓縮並寫檔；每完成一個檔案送出一筆結果，全部完成後 stream 結束。
@@ -253,8 +254,8 @@ pub fn run_normal(inputs: Vec<NormalInput>, options: NormalOptions, sink: Stream
                 nm::Status::KeptOriginal => FileStatus::KeptOriginal,
                 nm::Status::Failed => FileStatus::Failed,
             },
-            error: r.error.clone(),
-            warnings: r.warnings.clone(),
+            error: r.error.as_ref().map(Into::into),
+            warnings: warnings(&r.warnings),
         });
     });
 }

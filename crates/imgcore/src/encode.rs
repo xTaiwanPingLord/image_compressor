@@ -1,6 +1,6 @@
 //! mozjpeg 編碼與檔案大小目標搜尋。
 
-use crate::{Error, Result, geom};
+use crate::{Error, Result, geom, warn::Warn};
 use image::RgbImage;
 use serde::Serialize;
 
@@ -55,7 +55,7 @@ pub struct Encoded {
     pub mode: Mode,
     pub width: u32,
     pub height: u32,
-    pub warnings: Vec<String>,
+    pub warnings: Vec<Warn>,
 }
 
 /// 在 [lo, hi] 中找出大小 ≤ max 的最高品質；回傳 (品質, 資料)。lo 也超標則 None。
@@ -108,24 +108,22 @@ pub fn compress_to_target(img: &RgbImage, t: &Target) -> Result<Encoded> {
                 downscaled += 1;
             }
             None => {
-                warnings.push(format!(
-                    "品質 {} 仍有 {} bytes，超過上限 {}",
-                    t.min_quality,
-                    smallest.len(),
-                    t.max_bytes
-                ));
+                warnings.push(Warn::OverMax {
+                    quality: t.min_quality,
+                    bytes: smallest.len() as u64,
+                    max: t.max_bytes,
+                });
                 break (t.min_quality, smallest);
             }
         }
     };
     if downscaled > 0 {
-        warnings.push(format!(
-            "品質降到 {} 仍超標，解析度縮小 {} 次至 {}×{}",
-            t.min_quality,
-            downscaled,
-            cur.width(),
-            cur.height()
-        ));
+        warnings.push(Warn::Downscaled {
+            quality: t.min_quality,
+            times: downscaled,
+            width: cur.width(),
+            height: cur.height(),
+        });
     }
     let mut out = Encoded {
         data,
@@ -159,11 +157,10 @@ pub fn compress_to_target(img: &RgbImage, t: &Target) -> Result<Encoded> {
             }
         }
         if (out.data.len() as u64) < min {
-            out.warnings.push(format!(
-                "檔案 {} bytes 低於下限 {}（已用品質 100、4:4:4 並關閉最佳化）",
-                out.data.len(),
-                min
-            ));
+            out.warnings.push(Warn::UnderMin {
+                bytes: out.data.len() as u64,
+                min,
+            });
         }
     }
     Ok(out)

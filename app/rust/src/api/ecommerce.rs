@@ -1,5 +1,6 @@
 //! 電商模式 API（包裝 imgcore::ecommerce）。
 
+use crate::api::common::{warnings, AppError, WarningInfo};
 use crate::frb_generated::StreamSink;
 use imgcore::cleanup::Disposal;
 use imgcore::ecommerce as ec;
@@ -141,7 +142,7 @@ pub struct OutputInfo {
     pub height: u32,
     pub bytes: u64,
     pub quality: u8,
-    pub warnings: Vec<String>,
+    pub warnings: Vec<WarningInfo>,
 }
 
 pub struct OverflowInfo {
@@ -181,8 +182,8 @@ pub struct EcomProgress {
     pub total: u32,
     /// Done 時的結果
     pub report: Option<EcomReport>,
-    /// Failed 時的錯誤訊息
-    pub error: Option<String>,
+    /// Failed 時的錯誤
+    pub error: Option<AppError>,
 }
 
 impl EcomProgress {
@@ -257,7 +258,7 @@ fn to_report(r: ec::RunReport) -> EcomReport {
                 height: o.height,
                 bytes: o.bytes as u64,
                 quality: o.quality,
-                warnings: o.warnings,
+                warnings: warnings(&o.warnings),
             })
             .collect(),
         written_count: r.written.len() as u32,
@@ -287,7 +288,7 @@ pub fn run_ecommerce(job: EcomJob, dry_run: bool, sink: StreamSink<EcomProgress>
             ..EcomProgress::stage(EcomStage::Done)
         },
         Err(e) => EcomProgress {
-            error: Some(e.to_string()),
+            error: Some((&e).into()),
             ..EcomProgress::stage(EcomStage::Failed)
         },
     });

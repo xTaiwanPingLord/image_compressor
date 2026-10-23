@@ -55,7 +55,10 @@ Future<void> hoverAllHints(WidgetTester tester) async {
 }
 
 Future<void> start(WidgetTester tester, int mode) async {
-  SharedPreferences.setMockInitialValues({'app.mode': mode});
+  SharedPreferences.setMockInitialValues({
+    'app.mode': mode,
+    'app.language': 'zhTW',
+  });
   final prefs = await SharedPreferences.getInstance();
   await tester.binding.setSurfaceSize(const Size(1280, 860));
   await tester.pumpWidget(

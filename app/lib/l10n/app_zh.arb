@@ -1,0 +1,412 @@
+{
+  "@@locale": "zh",
+  "appTitle": "圖片壓縮",
+  "navNormal": "普通",
+  "navEcommerce": "電商",
+  "navSettings": "設定",
+  "close": "關閉",
+  "cancel": "取消",
+  "save": "儲存",
+  "continueAction": "繼續",
+  "gotIt": "知道了",
+  "resetDefaults": "還原預設",
+  "openFolder": "開啟資料夾",
+  "settingsTooltip": "設定",
+  "addImages": "加入圖片",
+  "addFolder": "加入資料夾",
+  "addFolderRecursive": "加入資料夾（含子資料夾）",
+  "remove": "移除",
+  "dropHere": "拖放圖片或資料夾到這裡",
+  "imagesTypeLabel": "圖片",
+  "pad": "補白",
+  "crop": "裁切",
+  "unreadable": "無法讀取",
+  "unknownError": "未知錯誤",
+  "runFailed": "執行失敗",
+  "blockRunning": "執行中",
+  "blockNoImages": "請先加入圖片",
+  "blockNoName": "請輸入 name",
+  "blockBadName": "name 不能包含 \\ / : * ? \" < > |",
+  "blockNoPlatform": "請至少勾選一個平台",
+  "blockLoading": "讀取圖片資訊中",
+  "blockUnreadable": "有無法讀取的圖片，請先移除",
+  "errIo": "檔案存取錯誤",
+  "errDecode": "無法讀取圖片",
+  "errEncode": "編碼失敗",
+  "errInvalid": "設定錯誤",
+  "errTrash": "移到垃圾桶失敗",
+  "errOther": "錯誤",
+  "warnOverMax": "品質降到 {quality} 仍有 {size}，超過上限 {max}",
+  "@warnOverMax": {
+    "placeholders": {
+      "quality": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "warnDownscaled": "品質降到 {quality} 仍超標，解析度縮小 {times} 次至 {width}×{height}",
+  "@warnDownscaled": {
+    "placeholders": {
+      "quality": {
+        "type": "int"
+      },
+      "times": {
+        "type": "int"
+      },
+      "width": {
+        "type": "int"
+      },
+      "height": {
+        "type": "int"
+      }
+    }
+  },
+  "warnUnderMin": "檔案 {size} 低於下限 {min}（已用品質 100、4:4:4 並關閉最佳化）",
+  "@warnUnderMin": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "warnGifFirstFrame": "GIF 只取第一格",
+  "warnJpegReencoded": "JPEG 需重新編碼（縮放或轉檔），以品質 100、4:4:4 輸出",
+  "warnTargetNotReached": "品質降到 1 仍有 {size}，超過目標 {target}",
+  "@warnTargetNotReached": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "ecomNameHint": "例如 223_ssd",
+  "ecomRun": "執行",
+  "ecomClearAll": "全部清空",
+  "ecomEncoding": "壓縮中 {done} / {total}",
+  "@ecomEncoding": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "ecomWriting": "寫入檔案…",
+  "ecomPreparing": "讀取與排版…",
+  "ecomStatus": "共 {count} 張 · 詳情圖上限 Shopee {shopee} / momo {momo} · 智慧切點{smart} · Shopee 最大寬 {width} · 品質上限 {quality}",
+  "@ecomStatus": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "shopee": {
+        "type": "int"
+      },
+      "momo": {
+        "type": "int"
+      },
+      "smart": {
+        "type": "String"
+      },
+      "width": {
+        "type": "String"
+      },
+      "quality": {
+        "type": "int"
+      }
+    }
+  },
+  "on": "開",
+  "off": "關",
+  "unlimited": "不限",
+  "catMain": "主圖",
+  "catVariant": "選項圖",
+  "catDesc": "詳情圖",
+  "imageCount": "{count} 張",
+  "@imageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearSection": "清空此區",
+  "enterNumber": "請輸入數字",
+  "rangeHelp": "{min}–{max}",
+  "@rangeHelp": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "rangeError": "需在 {min}–{max}",
+  "@rangeError": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "ecomSettingsTitle": "電商模式設定",
+  "ecomShopeeMaxDesc": "Shopee 詳情圖最多張數",
+  "ecomMomoMaxDesc": "momo 詳情圖最多張數",
+  "ecomMomoMaxDescHelp": "{min}–{max}（預設 18，保留空間給店家資訊圖）",
+  "@ecomMomoMaxDescHelp": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "ecomShopeeMaxWidth": "Shopee 最大寬度（px）",
+  "ecomShopeeMaxWidthHelp": "0 = 不限制；Shopee 前台約顯示到 1750",
+  "ecomShopeeMaxWidthError": "需為 0 或 ≥ 750",
+  "ecomMomoMinLast": "momo 詳情圖尾段最小高度（px）",
+  "ecomMomoMinLastHelp": "低於此高度時從前一段挪高度；0 = 保持實際高度",
+  "ecomMomoMinLastError": "需小於 1500",
+  "ecomQuality": "品質",
+  "ecomQualityHelp": "每張圖各自搜尋「符合大小限制的最高品質」，不超過下方上限",
+  "ecomMaxQuality": "品質上限",
+  "ecomChroma444": "色度 4:4:4",
+  "ecomChroma444Help": "文字與細線邊緣較清晰（尤其紅字），檔案較大",
+  "ecomSmartCut": "智慧切點",
+  "ecomSmartCutHelp": "切段處往上 150px 內找最接近純色的橫列下刀，避免切到文字",
+  "ecomDefaultFit": "新加入圖片的預設處理",
+  "ecomOverflowTitle": "詳情圖張數超過上限",
+  "ecomOverflowLine": "{platform}：會切成 {count} 張，上限 {limit} 張",
+  "@ecomOverflowLine": {
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "ecomOverflowHelp": "整批未輸出任何檔案。請刪減詳情圖，或到設定調整上限後重試。",
+  "ecomResultTitle": "已輸出 {count} 個檔案",
+  "@ecomResultTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ecomDisposed": "已將 {count} 個舊檔移到垃圾桶",
+  "@ecomDisposed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ecomWarnCount": "{count} 個檔案有警告",
+  "@ecomWarnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overwriteTitle": "將覆寫原檔",
+  "overwriteBody": "輸出位置與原檔相同且沒有後綴，原檔會先移到垃圾桶再寫入壓縮後的檔案。要繼續嗎？",
+  "normalDone": "完成 {count}",
+  "@normalDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "normalKept": "保留原檔 {count}",
+  "@normalKept": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "normalFailedCount": "失敗 {count}",
+  "@normalFailedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listSep": "，",
+  "sizeChange": "{before} → {after}（−{pct}%）",
+  "@sizeChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "compressAll": "全部壓縮",
+  "compressSelected": "壓縮選取（{count}）",
+  "@compressSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearAll": "清空全部",
+  "removeSelected": "移除選取（{count}）",
+  "@removeSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "normalStatusIdle": "{count} 張 · {size}",
+  "@normalStatusIdle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "normalStatusLast": "上次：{change}",
+  "@normalStatusLast": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "colName": "名稱",
+  "colOriginalSize": "原大小",
+  "colNewSize": "新大小",
+  "colResolution": "解析度",
+  "colSaving": "節省",
+  "colStatus": "狀態",
+  "statusWorking": "壓縮中…",
+  "statusDone": "完成",
+  "statusKept": "保留原檔",
+  "statusFailed": "失敗",
+  "previewSelectHint": "選取一張圖片以預覽",
+  "previewOriginal": "原圖",
+  "previewCompressed": "壓縮後",
+  "previewEstimate": "預估 {size}（{change}%）",
+  "@previewEstimate": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "lossless": "無損",
+  "previewFailed": "無法預覽：{error}",
+  "@previewFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "tabCompression": "壓縮",
+  "tabOutput": "輸出",
+  "secMode": "模式",
+  "modeQuality": "品質",
+  "modeTargetSize": "目標大小",
+  "losslessHelp": "JPEG 只重新最佳化編碼、PNG 用 oxipng、WebP 用無損模式",
+  "chromaSubsampling": "色度取樣",
+  "chromaAuto": "自動（品質 ≥ 90 用 4:4:4）",
+  "chroma444": "4:4:4（最清晰）",
+  "chroma420": "4:2:0（最小）",
+  "pngOptimize": "最佳化",
+  "pngOptimizeHelp": "等級越高越小但越慢；有損 PNG 以品質決定調色盤色數",
+  "secResize": "縮放",
+  "resizeMethod": "縮放方式",
+  "resizeNone": "不縮放",
+  "resizePercentage": "百分比",
+  "resizeWidth": "固定寬度",
+  "resizeHeight": "固定高度",
+  "resizeLongEdge": "長邊",
+  "resizeShortEdge": "短邊",
+  "resizeFitBox": "縮放到框內（寬 × 高）",
+  "valueWidth": "寬度",
+  "valueHeight": "高度",
+  "valueMaxWidth": "寬度上限",
+  "valueMaxHeight": "高度上限",
+  "noEnlarge": "不放大",
+  "noEnlargeHelp": "比目標小的圖片維持原尺寸",
+  "resizeNote": "一律等比縮放（Lanczos3）",
+  "secFormat": "格式",
+  "outputFormat": "輸出格式",
+  "formatSame": "與原檔相同（BMP / TIFF / GIF 轉 PNG）",
+  "secLocation": "位置",
+  "sameFolder": "與原檔相同資料夾",
+  "customFolder": "指定資料夾",
+  "change": "變更…",
+  "keepStructure": "保留資料夾結構",
+  "keepStructureHelp": "拖入資料夾時，依子資料夾分別輸出",
+  "secFileName": "檔名",
+  "suffix": "後綴",
+  "overwriteWarning": "同資料夾且無後綴：會覆寫原檔（原檔先移到垃圾桶）",
+  "secMetadata": "中繼資料",
+  "keepMetadata": "保留 EXIF 等中繼資料",
+  "keepMetadataHelp": "ICC 色彩描述檔一律保留",
+  "keepDates": "保留檔案日期",
+  "secOther": "其他",
+  "skipIfBigger": "壓縮後較大時保留原檔",
+  "skipIfBiggerHelp": "格式與尺寸不變時，改輸出原檔內容",
+  "setLanguage": "語言",
+  "setTheme": "主題",
+  "themeSystem": "自動",
+  "themeLight": "淺色",
+  "themeDark": "深色",
+  "setColor": "色彩",
+  "colorFollowSystem": "跟隨系統色彩",
+  "colorFollowSystemHelp": "Android 12 以上使用桌布色彩；Windows / macOS 使用系統強調色",
+  "setFont": "字體",
+  "fontDefault": "預設（系統字體）",
+  "fontSample": "圖片壓縮 Image Compressor 0123",
+  "fontMiSansScNote": "MiSans TC 只含繁體字形，簡體字會改用系統字體顯示",
+  "setAbout": "關於",
+  "aboutFontCredit": "內建字體：MiSans TC（小米 MiSans 字體，免費商用授權）",
+  "colonSep": "："
+}

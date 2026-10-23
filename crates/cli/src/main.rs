@@ -420,7 +420,10 @@ fn main() -> ExitCode {
                     let name = r.input.file_name().unwrap_or_default().to_string_lossy();
                     match r.status {
                         nm::Status::Failed => {
-                            println!("✗ {name}：{}", r.error.as_deref().unwrap_or(""))
+                            println!(
+                                "✗ {name}：{}",
+                                r.error.as_ref().map(|e| e.message.as_str()).unwrap_or("")
+                            )
                         }
                         _ => println!(
                             "{} {name}  {} → {} bytes（−{:.1}%）{}",

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../src/rust/api/common.dart';
 import '../src/rust/api/ecommerce.dart';
 import '../src/rust/api/files.dart';
 
@@ -27,6 +28,17 @@ class EcomItem {
 }
 
 enum RunPhase { idle, running }
+
+/// 不能執行的原因。
+enum EcomBlock {
+  running,
+  noName,
+  badName,
+  noPlatform,
+  noImages,
+  loading,
+  unreadable,
+}
 
 /// 電商模式狀態。
 class EcomState extends ChangeNotifier {
@@ -226,17 +238,15 @@ class EcomState extends ChangeNotifier {
     );
   }
 
-  /// 不能執行的原因；可執行時回傳 null。
-  String? get blockReason {
-    if (running) return '執行中';
-    if (name.trim().isEmpty) return '請輸入 name';
-    if (RegExp(r'[\\/:*?"<>|]').hasMatch(name)) {
-      return 'name 不能包含 \\ / : * ? " < > |';
-    }
-    if (platforms.isEmpty) return '請至少勾選一個平台';
-    if (totalCount == 0) return '請先加入圖片';
-    if (!allLoaded) return '讀取圖片資訊中';
-    if (hasErrors) return '有無法讀取的圖片，請先移除';
+  /// 不能執行的原因；可執行時回傳 null（UI 負責翻譯）。
+  EcomBlock? get blockReason {
+    if (running) return EcomBlock.running;
+    if (name.trim().isEmpty) return EcomBlock.noName;
+    if (RegExp(r'[\\/:*?"<>|]').hasMatch(name)) return EcomBlock.badName;
+    if (platforms.isEmpty) return EcomBlock.noPlatform;
+    if (totalCount == 0) return EcomBlock.noImages;
+    if (!allLoaded) return EcomBlock.loading;
+    if (hasErrors) return EcomBlock.unreadable;
     return null;
   }
 
@@ -270,7 +280,7 @@ class EcomState extends ChangeNotifier {
         stage: EcomStage.failed,
         done: 0,
         total: 0,
-        error: e.toString(),
+        error: AppError(kind: ErrorKind.other, detail: e.toString()),
       );
     } finally {
       phase = RunPhase.idle;
@@ -281,7 +291,7 @@ class EcomState extends ChangeNotifier {
           stage: EcomStage.failed,
           done: 0,
           total: 0,
-          error: '沒有收到結果',
+          error: AppError(kind: ErrorKind.other, detail: ''),
         );
   }
 }

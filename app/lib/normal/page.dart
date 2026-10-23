@@ -3,8 +3,9 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../ecommerce/dialogs.dart' show formatBytes, openFolder;
+import '../ecommerce/dialogs.dart' show openFolder;
 import '../ecommerce/section.dart' show imageTypeGroup;
+import '../l10n/l10n.dart';
 import '../widgets/thumb.dart';
 import 'settings_panel.dart';
 import 'state.dart';
@@ -25,7 +26,7 @@ class _NormalPageState extends State<NormalPage> {
   NormalState get s => widget.state;
 
   Future<void> _addFiles() async {
-    final f = await openFiles(acceptedTypeGroups: [imageTypeGroup]);
+    final f = await openFiles(acceptedTypeGroups: [imageTypeGroup(context.l)]);
     if (f.isNotEmpty) await s.addPaths(f.map((x) => x.path).toList());
   }
 
@@ -40,16 +41,16 @@ class _NormalPageState extends State<NormalPage> {
         context: context,
         builder: (context) => AlertDialog(
           icon: const Icon(Icons.warning_amber_rounded),
-          title: const Text('將覆寫原檔'),
-          content: const Text('輸出位置與原檔相同且沒有後綴，原檔會先移到垃圾桶再寫入壓縮後的檔案。要繼續嗎？'),
+          title: Text(context.l.overwriteTitle),
+          content: Text(context.l.overwriteBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消'),
+              child: Text(context.l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('繼續'),
+              child: Text(context.l.continueAction),
             ),
           ],
         ),
@@ -58,6 +59,7 @@ class _NormalPageState extends State<NormalPage> {
     }
     final sum = await s.run(onlySelected: onlySelected);
     if (!mounted) return;
+    final l = context.l;
     final saved = sum.before - sum.after;
     final pct = sum.before == 0 ? 0 : saved / sum.before * 100;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -65,13 +67,13 @@ class _NormalPageState extends State<NormalPage> {
         duration: const Duration(seconds: 6),
         persist: false, // 有按鈕時預設不會自動消失
         content: Text(
-          '完成 ${sum.done}${sum.kept > 0 ? '，保留原檔 ${sum.kept}' : ''}${sum.failed > 0 ? '，失敗 ${sum.failed}' : ''}'
-          ' · ${formatBytes(sum.before)} → ${formatBytes(sum.after)}（−${pct.toStringAsFixed(1)}%）',
+          '${[l.normalDone(sum.done), if (sum.kept > 0) l.normalKept(sum.kept), if (sum.failed > 0) l.normalFailedCount(sum.failed)].join(l.listSep)}'
+          ' · ${l.sizeChange(formatBytes(sum.before), formatBytes(sum.after), pct.toStringAsFixed(1))}',
         ),
         action: sum.outputDirs.isEmpty
             ? null
             : SnackBarAction(
-                label: '開啟資料夾',
+                label: l.openFolder,
                 onPressed: () => openFolder(sum.outputDirs.first),
               ),
       ),
@@ -133,24 +135,24 @@ class _NormalPageState extends State<NormalPage> {
           FilledButton.icon(
             onPressed: s.blockReason == null ? () => _run() : null,
             icon: const Icon(Icons.compress),
-            label: const Text('全部壓縮'),
+            label: Text(context.l.compressAll),
           ),
           OutlinedButton(
             onPressed: off || s.selected.isEmpty
                 ? null
                 : () => _run(onlySelected: true),
-            child: Text('壓縮選取（${s.selected.length}）'),
+            child: Text(context.l.compressSelected(s.selected.length)),
           ),
           const SizedBox(width: 8),
           Hint(
-            message: '加入圖片',
+            message: context.l.addImages,
             child: IconButton(
               onPressed: off ? null : _addFiles,
               icon: const Icon(Icons.add_photo_alternate_outlined),
             ),
           ),
           Hint(
-            message: '加入資料夾（含子資料夾）',
+            message: context.l.addFolderRecursive,
             child: IconButton(
               onPressed: off ? null : _addFolder,
               icon: const Icon(Icons.create_new_folder_outlined),
@@ -160,16 +162,16 @@ class _NormalPageState extends State<NormalPage> {
           OutlinedButton.icon(
             onPressed: off || s.items.isEmpty ? null : s.clear,
             icon: const Icon(Icons.clear_all),
-            label: const Text('清空全部'),
+            label: Text(context.l.clearAll),
           ),
           OutlinedButton.icon(
             onPressed: off || s.selected.isEmpty ? null : s.removeSelected,
             icon: const Icon(Icons.remove_circle_outline),
-            label: Text('移除選取（${s.selected.length}）'),
+            label: Text(context.l.removeSelected(s.selected.length)),
           ),
           if (!wide)
             Hint(
-              message: '設定',
+              message: context.l.settingsTooltip,
               child: IconButton(
                 onPressed: _openSettingsSheet,
                 icon: const Icon(Icons.tune),
@@ -198,7 +200,7 @@ class _NormalPageState extends State<NormalPage> {
         child: s.items.isEmpty
             ? Center(
                 child: Text(
-                  '拖放圖片或資料夾到這裡',
+                  context.l.dropHere,
                   style: TextStyle(color: scheme.onSurfaceVariant),
                 ),
               )
@@ -209,17 +211,18 @@ class _NormalPageState extends State<NormalPage> {
 
   Widget _statusBar(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l;
     String text;
     if (s.running) {
-      text = '壓縮中 ${s.doneCount} / ${s.runTotal}';
+      text = l.ecomEncoding(s.doneCount, s.runTotal);
     } else {
       final total = s.items.fold<int>(0, (a, i) => a + i.originalSize);
-      text = '${s.items.length} 張 · ${formatBytes(total)}';
+      text = l.normalStatusIdle(s.items.length, formatBytes(total));
       final sum = s.lastSummary;
       if (sum != null && sum.before > 0) {
         final pct = (sum.before - sum.after) / sum.before * 100;
         text +=
-            ' · 上次：${formatBytes(sum.before)} → ${formatBytes(sum.after)}（−${pct.toStringAsFixed(1)}%）';
+            ' · ${l.normalStatusLast(l.sizeChange(formatBytes(sum.before), formatBytes(sum.after), pct.toStringAsFixed(1)))}';
       }
     }
     return Material(
@@ -252,13 +255,22 @@ class _FileTable extends StatelessWidget {
   final NormalState state;
 
   static const _cols = [
-    (SortColumn.name, '名稱', 0, TextAlign.left),
-    (SortColumn.originalSize, '原大小', 90, TextAlign.right),
-    (SortColumn.newSize, '新大小', 90, TextAlign.right),
-    (SortColumn.resolution, '解析度', 170, TextAlign.right),
-    (SortColumn.saving, '節省', 70, TextAlign.right),
-    (SortColumn.status, '狀態', 90, TextAlign.left),
+    (SortColumn.name, 0, TextAlign.left),
+    (SortColumn.originalSize, 90, TextAlign.right),
+    (SortColumn.newSize, 90, TextAlign.right),
+    (SortColumn.resolution, 170, TextAlign.right),
+    (SortColumn.saving, 70, TextAlign.right),
+    (SortColumn.status, 100, TextAlign.left),
   ];
+
+  static String _colLabel(AppLocalizations l, SortColumn c) => switch (c) {
+    SortColumn.name => l.colName,
+    SortColumn.originalSize => l.colOriginalSize,
+    SortColumn.newSize => l.colNewSize,
+    SortColumn.resolution => l.colResolution,
+    SortColumn.saving => l.colSaving,
+    SortColumn.status => l.colStatus,
+  };
 
   @override
   Widget build(BuildContext context) =>
@@ -270,10 +282,11 @@ class _FileTable extends StatelessWidget {
     final s = state;
 
     // 窄版：隱藏解析度欄並縮窄其他欄
-    const compactWidths = [0, 76, 76, 0, 60, 64];
+    const compactWidths = [0, 76, 76, 0, 60, 72];
+    final l = context.l;
     Widget cell(int i, Widget child) {
       if (compact && i == 3) return const SizedBox.shrink();
-      final w = compact ? compactWidths[i] : _cols[i].$3;
+      final w = compact ? compactWidths[i] : _cols[i].$2;
       final pad = Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: child,
@@ -294,13 +307,13 @@ class _FileTable extends StatelessWidget {
               InkWell(
                 onTap: () => s.sortBy(_cols[i].$1),
                 child: Row(
-                  mainAxisAlignment: _cols[i].$4 == TextAlign.right
+                  mainAxisAlignment: _cols[i].$3 == TextAlign.right
                       ? MainAxisAlignment.end
                       : MainAxisAlignment.start,
                   children: [
                     Flexible(
                       child: Text(
-                        _cols[i].$2,
+                        _colLabel(l, _cols[i].$1),
                         style: theme.textTheme.labelMedium,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -359,13 +372,13 @@ class _FileTable extends StatelessWidget {
                 final saving = it.saving;
                 final (statusText, statusColor) = switch (it.status) {
                   ItemStatus.pending => (
-                    it.loadError != null ? '無法讀取' : '',
+                    it.loadError != null ? l.unreadable : '',
                     it.loadError != null ? scheme.error : null,
                   ),
-                  ItemStatus.working => ('壓縮中…', scheme.primary),
-                  ItemStatus.done => ('完成', Colors.green.shade600),
-                  ItemStatus.keptOriginal => ('保留原檔', scheme.tertiary),
-                  ItemStatus.failed => ('失敗', scheme.error),
+                  ItemStatus.working => (l.statusWorking, scheme.primary),
+                  ItemStatus.done => (l.statusDone, Colors.green.shade600),
+                  ItemStatus.keptOriginal => (l.statusKept, scheme.tertiary),
+                  ItemStatus.failed => (l.statusFailed, scheme.error),
                 };
                 final res =
                     it.newWidth != null &&
@@ -445,9 +458,10 @@ class _FileTable extends StatelessWidget {
                           5,
                           Hint(
                             message: [
-                              it.error ?? it.loadError,
-                              ...it.warnings,
-                            ].whereType<String>().join('\n'),
+                              if (it.error != null) errorText(l, it.error),
+                              ?it.loadError,
+                              for (final w in it.warnings) warningText(l, w),
+                            ].join('\n'),
                             child: Text(
                               statusText,
                               style: small?.copyWith(color: statusColor),
@@ -479,10 +493,11 @@ class _PreviewPane extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final it = state.focused;
+    final l = context.l;
     if (it == null) {
       return Center(
         child: Text(
-          '選取一張圖片以預覽',
+          l.previewSelectHint,
           style: TextStyle(color: scheme.onSurfaceVariant),
         ),
       );
@@ -513,10 +528,13 @@ class _PreviewPane extends StatelessWidget {
       final orig = r.originalSize.toInt();
       final pct = orig == 0 ? 0 : (1 - r.data.length / orig) * 100;
       estimate =
-          '預估 ${formatBytes(r.data.length)}（${pct >= 0 ? '−' : '+'}${pct.abs().toStringAsFixed(1)}%）'
-          ' · ${r.width}×${r.height} · ${r.ext.toUpperCase()}${r.quality == null ? ' 無損' : ' q${r.quality}'}';
+          '${l.previewEstimate(formatBytes(r.data.length), '${pct >= 0 ? '−' : '+'}${pct.abs().toStringAsFixed(1)}')}'
+          ' · ${r.width}×${r.height} · ${r.ext.toUpperCase()} ${r.quality == null ? l.lossless : 'q${r.quality}'}';
       if (pct < 0) estColor = scheme.error;
-      if (r.warnings.isNotEmpty) estimate += ' · ⚠ ${r.warnings.join('；')}';
+      if (r.warnings.isNotEmpty) {
+        estimate +=
+            ' · ⚠ ${r.warnings.map((w) => warningText(l, w)).join(' / ')}';
+      }
     }
 
     return Row(
@@ -527,7 +545,7 @@ class _PreviewPane extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               header(
-                '原圖',
+                l.previewOriginal,
                 it.loaded
                     ? '${formatBytes(it.originalSize)} · ${it.width}×${it.height}'
                     : '',
@@ -544,8 +562,8 @@ class _PreviewPane extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               header(
-                '壓縮後',
-                pv.error != null ? '無法預覽：${pv.error}' : estimate,
+                l.previewCompressed,
+                pv.error != null ? l.previewFailed(pv.error!) : estimate,
                 color: pv.error != null ? scheme.error : estColor,
               ),
               Expanded(

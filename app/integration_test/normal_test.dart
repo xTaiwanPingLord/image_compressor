@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_compressor/ecommerce/state.dart';
 import 'package:image_compressor/main.dart';
 import 'package:image_compressor/normal/state.dart';
+import 'package:image_compressor/settings/app_settings.dart';
 import 'package:image_compressor/src/rust/api/normal.dart';
+import 'package:image_compressor/l10n/l10n.dart';
 import 'package:image_compressor/src/rust/frb_generated.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
@@ -77,11 +79,18 @@ void main() {
         key: _shotKey,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
+          locale: const Locale('zh', 'TW'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: appTheme(Brightness.light).copyWith(
             textTheme: appTheme(Brightness.light).textTheme
                 .apply(fontFamilyFallback: ['Noto Sans CJK TC']),
           ),
-          home: HomeShell(ecom: EcomState(), normal: normal),
+          home: HomeShell(
+            settings: AppSettings(),
+            ecom: EcomState(),
+            normal: normal,
+          ),
         ),
       ),
     );

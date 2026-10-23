@@ -6,6 +6,7 @@
 // Static analysis wrongly picks the IO variant, thus ignore this
 // ignore_for_file: argument_type_not_assignable
 
+import 'api/common.dart';
 import 'api/ecommerce.dart';
 import 'api/files.dart';
 import 'api/normal.dart';
@@ -40,7 +41,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  AppError dco_decode_app_error(dynamic raw);
+
+  @protected
   bool dco_decode_bool(dynamic raw);
+
+  @protected
+  AppError dco_decode_box_autoadd_app_error(dynamic raw);
 
   @protected
   EcomJob dco_decode_box_autoadd_ecom_job(dynamic raw);
@@ -79,6 +86,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   EcomStage dco_decode_ecom_stage(dynamic raw);
 
   @protected
+  ErrorKind dco_decode_error_kind(dynamic raw);
+
+  @protected
   FileResult dco_decode_file_result(dynamic raw);
 
   @protected
@@ -89,6 +99,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_i_32(dynamic raw);
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
   ImageMeta dco_decode_image_meta(dynamic raw);
@@ -115,10 +128,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<OverflowInfo> dco_decode_list_overflow_info(dynamic raw);
 
   @protected
+  Int64List dco_decode_list_prim_i_64_strict(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
   List<ShopPlatform> dco_decode_list_shop_platform(dynamic raw);
+
+  @protected
+  List<WarningInfo> dco_decode_list_warning_info(dynamic raw);
 
   @protected
   NormalInput dco_decode_normal_input(dynamic raw);
@@ -128,6 +147,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  AppError? dco_decode_opt_box_autoadd_app_error(dynamic raw);
 
   @protected
   EcomReport? dco_decode_opt_box_autoadd_ecom_report(dynamic raw);
@@ -166,6 +188,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  WarningInfo dco_decode_warning_info(dynamic raw);
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
@@ -182,7 +207,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  AppError sse_decode_app_error(SseDeserializer deserializer);
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
+
+  @protected
+  AppError sse_decode_box_autoadd_app_error(SseDeserializer deserializer);
 
   @protected
   EcomJob sse_decode_box_autoadd_ecom_job(SseDeserializer deserializer);
@@ -223,6 +254,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   EcomStage sse_decode_ecom_stage(SseDeserializer deserializer);
 
   @protected
+  ErrorKind sse_decode_error_kind(SseDeserializer deserializer);
+
+  @protected
   FileResult sse_decode_file_result(SseDeserializer deserializer);
 
   @protected
@@ -233,6 +267,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
   ImageMeta sse_decode_image_meta(SseDeserializer deserializer);
@@ -261,12 +298,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Int64List sse_decode_list_prim_i_64_strict(SseDeserializer deserializer);
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
   List<ShopPlatform> sse_decode_list_shop_platform(
     SseDeserializer deserializer,
   );
+
+  @protected
+  List<WarningInfo> sse_decode_list_warning_info(SseDeserializer deserializer);
 
   @protected
   NormalInput sse_decode_normal_input(SseDeserializer deserializer);
@@ -276,6 +319,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  AppError? sse_decode_opt_box_autoadd_app_error(SseDeserializer deserializer);
 
   @protected
   EcomReport? sse_decode_opt_box_autoadd_ecom_report(
@@ -316,6 +362,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
+  WarningInfo sse_decode_warning_info(SseDeserializer deserializer);
+
+  @protected
   void sse_encode_AnyhowException(
     AnyhowException self,
     SseSerializer serializer,
@@ -337,7 +386,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_app_error(AppError self, SseSerializer serializer);
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_app_error(
+    AppError self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_ecom_job(EcomJob self, SseSerializer serializer);
@@ -385,6 +443,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_ecom_stage(EcomStage self, SseSerializer serializer);
 
   @protected
+  void sse_encode_error_kind(ErrorKind self, SseSerializer serializer);
+
+  @protected
   void sse_encode_file_result(FileResult self, SseSerializer serializer);
 
   @protected
@@ -395,6 +456,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
   void sse_encode_image_meta(ImageMeta self, SseSerializer serializer);
@@ -436,6 +500,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_prim_i_64_strict(
+    Int64List self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
     SseSerializer serializer,
@@ -448,6 +518,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_warning_info(
+    List<WarningInfo> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_normal_input(NormalInput self, SseSerializer serializer);
 
   @protected
@@ -455,6 +531,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_app_error(
+    AppError? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_ecom_report(
@@ -494,6 +576,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_warning_info(WarningInfo self, SseSerializer serializer);
 }
 
 // Section: wire_class

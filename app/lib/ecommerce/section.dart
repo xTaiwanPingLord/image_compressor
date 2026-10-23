@@ -2,21 +2,16 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../src/rust/api/ecommerce.dart';
 import '../widgets/thumb.dart';
 import 'state.dart';
 import '../widgets/hint.dart';
 
-const imageTypeGroup = XTypeGroup(
-  label: '圖片',
-  extensions: ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tif', 'tiff', 'gif'],
+XTypeGroup imageTypeGroup(AppLocalizations l) => XTypeGroup(
+  label: l.imagesTypeLabel,
+  extensions: const ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tif', 'tiff', 'gif'],
 );
-
-String categoryLabel(ImgCategory c) => switch (c) {
-  ImgCategory.main => '主圖',
-  ImgCategory.variant => '選項圖',
-  ImgCategory.desc => '詳情圖',
-};
 
 /// 一個區塊：標題列 + 格狀縮圖；可拖放檔案、拖曳排序、跨區移動。
 class EcomSection extends StatefulWidget {
@@ -45,7 +40,9 @@ class _EcomSectionState extends State<EcomSection> {
   List<EcomItem> get items => s.sections[widget.category]!;
 
   Future<void> _pickFiles() async {
-    final files = await openFiles(acceptedTypeGroups: [imageTypeGroup]);
+    final files = await openFiles(
+      acceptedTypeGroups: [imageTypeGroup(context.l)],
+    );
     if (files.isEmpty) return;
     await s.addPaths(widget.category, files.map((f) => f.path).toList());
   }
@@ -67,7 +64,7 @@ class _EcomSectionState extends State<EcomSection> {
             padding: const EdgeInsets.symmetric(vertical: 28),
             child: Center(
               child: Text(
-                '拖放圖片或資料夾到這裡',
+                context.l.dropHere,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
@@ -136,33 +133,33 @@ class _EcomSectionState extends State<EcomSection> {
           child: Row(
             children: [
               Text(
-                categoryLabel(widget.category),
+                categoryLabel(context.l, widget.category),
                 style: theme.textTheme.titleMedium,
               ),
               const SizedBox(width: 8),
               Text(
-                '${items.length} 張',
+                context.l.imageCount(items.length),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
               ),
               const Spacer(),
               Hint(
-                message: '加入圖片',
+                message: context.l.addImages,
                 child: IconButton(
                   onPressed: s.running ? null : _pickFiles,
                   icon: const Icon(Icons.add_photo_alternate_outlined),
                 ),
               ),
               Hint(
-                message: '加入資料夾',
+                message: context.l.addFolder,
                 child: IconButton(
                   onPressed: s.running ? null : _pickFolder,
                   icon: const Icon(Icons.create_new_folder_outlined),
                 ),
               ),
               Hint(
-                message: '清空此區',
+                message: context.l.clearSection,
                 child: IconButton(
                   onPressed: s.running || items.isEmpty
                       ? null
@@ -250,7 +247,7 @@ class _ItemTileState extends State<_ItemTile> {
                 right: 0,
                 top: 0,
                 child: Hint(
-                  message: '移除',
+                  message: context.l.remove,
                   child: IconButton(
                     visualDensity: VisualDensity.compact,
                     style: IconButton.styleFrom(
@@ -275,7 +272,7 @@ class _ItemTileState extends State<_ItemTile> {
           ),
           Text(
             it.error != null
-                ? '無法讀取'
+                ? context.l.unreadable
                 : it.loaded
                 ? '${it.width}×${it.height}'
                 : '…',
@@ -291,9 +288,9 @@ class _ItemTileState extends State<_ItemTile> {
                 visualDensity: VisualDensity(horizontal: -4, vertical: -4),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              segments: const [
-                ButtonSegment(value: Fit.pad, label: Text('補白')),
-                ButtonSegment(value: Fit.crop, label: Text('裁切')),
+              segments: [
+                ButtonSegment(value: Fit.pad, label: Text(context.l.pad)),
+                ButtonSegment(value: Fit.crop, label: Text(context.l.crop)),
               ],
               selected: {it.fit},
               onSelectionChanged: s.running

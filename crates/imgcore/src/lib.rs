@@ -12,6 +12,7 @@ pub mod jpeg_lossless;
 pub mod load;
 pub mod natsort;
 pub mod normal;
+pub mod warn;
 
 pub use image::RgbImage;
 
@@ -30,3 +31,44 @@ pub enum Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+pub enum ErrorKind {
+    Io,
+    Decode,
+    Encode,
+    Invalid,
+    Trash,
+}
+
+/// 可複製的錯誤資訊：kind + 不含前綴的細節；message 為完整中文訊息（CLI 用）。
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct ErrorInfo {
+    pub kind: ErrorKind,
+    pub detail: String,
+    pub message: String,
+}
+
+impl From<&Error> for ErrorInfo {
+    fn from(e: &Error) -> Self {
+        let (kind, detail) = match e {
+            Error::Io(x) => (ErrorKind::Io, x.to_string()),
+            Error::Decode { path, msg } => (
+                ErrorKind::Decode,
+                if path.is_empty() {
+                    msg.clone()
+                } else {
+                    format!("{path}: {msg}")
+                },
+            ),
+            Error::Encode(m) => (ErrorKind::Encode, m.clone()),
+            Error::Invalid(m) => (ErrorKind::Invalid, m.clone()),
+            Error::Trash(m) => (ErrorKind::Trash, m.clone()),
+        };
+        Self {
+            kind,
+            detail,
+            message: e.to_string(),
+        }
+    }
+}

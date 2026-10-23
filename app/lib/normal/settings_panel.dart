@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/l10n.dart';
 import '../src/rust/api/normal.dart';
 import 'state.dart';
 
@@ -14,14 +15,15 @@ class NormalSettingsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l;
     return DefaultTabController(
       length: 2,
       child: Column(
         children: [
-          const TabBar(
+          TabBar(
             tabs: [
-              Tab(text: '壓縮'),
-              Tab(text: '輸出'),
+              Tab(text: l.tabCompression),
+              Tab(text: l.tabOutput),
             ],
           ),
           Expanded(
@@ -42,7 +44,7 @@ class NormalSettingsPanel extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: state.running ? null : state.resetSettings,
                 icon: const Icon(Icons.restart_alt, size: 18),
-                label: const Text('還原預設'),
+                label: Text(context.l.resetDefaults),
               ),
             ),
           ),
@@ -257,6 +259,7 @@ class _CompressionTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = state.settings;
     final off = state.running;
+    final l = context.l;
     void set(void Function() f) {
       f();
       state.settingsChanged();
@@ -266,12 +269,12 @@ class _CompressionTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        _Section('模式', [
+        _Section(l.secMode, [
           SegmentedButton<bool>(
             showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: false, label: Text('品質')),
-              ButtonSegment(value: true, label: Text('目標大小')),
+            segments: [
+              ButtonSegment(value: false, label: Text(l.modeQuality)),
+              ButtonSegment(value: true, label: Text(l.modeTargetSize)),
             ],
             selected: {s.sizeMode},
             onSelectionChanged: off || s.lossless
@@ -280,14 +283,14 @@ class _CompressionTab extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           _switch(
-            '無損',
+            l.lossless,
             s.lossless,
             off ? null : (v) => set(() => s.lossless = v),
-            subtitle: 'JPEG 只重新最佳化編碼、PNG 用 oxipng、WebP 用無損模式',
+            subtitle: l.losslessHelp,
           ),
           if (!s.sizeMode)
             _CommitSlider(
-              label: '品質',
+              label: l.modeQuality,
               value: s.quality,
               min: 1,
               max: 100,
@@ -296,7 +299,7 @@ class _CompressionTab extends StatelessWidget {
             )
           else
             _DebouncedNumber(
-              label: '目標大小',
+              label: l.modeTargetSize,
               suffix: 'KB',
               value: kb,
               enabled: !off && !s.lossless,
@@ -305,26 +308,23 @@ class _CompressionTab extends StatelessWidget {
         ]),
         _ResizeSection(state: state),
         _Section('JPEG', [
-          _dropdown<ChromaSubsampling>('色度取樣', s.jpegChroma, const {
-            ChromaSubsampling.auto: '自動（品質 ≥ 90 用 4:4:4）',
-            ChromaSubsampling.s444: '4:4:4（最清晰）',
+          _dropdown<ChromaSubsampling>(l.chromaSubsampling, s.jpegChroma, {
+            ChromaSubsampling.auto: l.chromaAuto,
+            ChromaSubsampling.s444: l.chroma444,
             ChromaSubsampling.s422: '4:2:2',
-            ChromaSubsampling.s420: '4:2:0（最小）',
+            ChromaSubsampling.s420: l.chroma420,
           }, off || s.lossless ? null : (v) => set(() => s.jpegChroma = v)),
         ]),
         _Section('PNG', [
           _CommitSlider(
-            label: '最佳化',
+            label: l.pngOptimize,
             value: s.pngLevel,
             min: 0,
             max: 6,
             enabled: !off,
             onCommit: (v) => set(() => s.pngLevel = v),
           ),
-          Text(
-            '等級越高越小但越慢；有損 PNG 以品質決定調色盤色數',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text(l.pngOptimizeHelp, style: Theme.of(context).textTheme.bodySmall),
         ]),
       ],
     );
@@ -341,6 +341,7 @@ class _ResizeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = state.settings;
     final off = state.running;
+    final l = context.l;
     void set(void Function() f) {
       f();
       state.settingsChanged();
@@ -348,27 +349,27 @@ class _ResizeSection extends StatelessWidget {
 
     final unit = s.resize == ResizeMode.percentage ? '%' : 'px';
     String label(ResizeMode m) => switch (m) {
-      ResizeMode.percentage => '百分比',
-      ResizeMode.width => '寬度',
-      ResizeMode.height => '高度',
-      ResizeMode.longEdge => '長邊',
-      ResizeMode.shortEdge => '短邊',
-      ResizeMode.fitBox => '寬度上限',
+      ResizeMode.percentage => l.resizePercentage,
+      ResizeMode.width => l.valueWidth,
+      ResizeMode.height => l.valueHeight,
+      ResizeMode.longEdge => l.resizeLongEdge,
+      ResizeMode.shortEdge => l.resizeShortEdge,
+      ResizeMode.fitBox => l.valueMaxWidth,
       ResizeMode.none => '',
     };
 
-    return _Section('縮放', [
+    return _Section(l.secResize, [
       _dropdown<ResizeMode>(
-        '縮放方式',
+        l.resizeMethod,
         s.resize,
-        const {
-          ResizeMode.none: '不縮放',
-          ResizeMode.percentage: '百分比',
-          ResizeMode.width: '固定寬度',
-          ResizeMode.height: '固定高度',
-          ResizeMode.longEdge: '長邊',
-          ResizeMode.shortEdge: '短邊',
-          ResizeMode.fitBox: '縮放到框內（寬 × 高）',
+        {
+          ResizeMode.none: l.resizeNone,
+          ResizeMode.percentage: l.resizePercentage,
+          ResizeMode.width: l.resizeWidth,
+          ResizeMode.height: l.resizeHeight,
+          ResizeMode.longEdge: l.resizeLongEdge,
+          ResizeMode.shortEdge: l.resizeShortEdge,
+          ResizeMode.fitBox: l.resizeFitBox,
         },
         off
             ? null
@@ -398,7 +399,7 @@ class _ResizeSection extends StatelessWidget {
         ),
       if (s.resize == ResizeMode.fitBox)
         _DebouncedNumber(
-          label: '高度上限',
+          label: l.valueMaxHeight,
           suffix: 'px',
           value: s.resizeValue2,
           enabled: !off,
@@ -406,13 +407,13 @@ class _ResizeSection extends StatelessWidget {
         ),
       if (s.resize != ResizeMode.none)
         _switch(
-          '不放大',
+          l.noEnlarge,
           s.noEnlarge,
           off ? null : (v) => set(() => s.noEnlarge = v),
-          subtitle: '比目標小的圖片維持原尺寸',
+          subtitle: l.noEnlargeHelp,
         ),
       const SizedBox(height: 8),
-      Text('一律等比縮放（Lanczos3）', style: Theme.of(context).textTheme.bodySmall),
+      Text(l.resizeNote, style: Theme.of(context).textTheme.bodySmall),
     ]);
   }
 }
@@ -445,6 +446,7 @@ class _OutputTabState extends State<_OutputTab> {
     final state = widget.state;
     final s = state.settings;
     final off = state.running;
+    final l = context.l;
     final theme = Theme.of(context);
     void set(void Function() f) {
       f();
@@ -455,15 +457,15 @@ class _OutputTabState extends State<_OutputTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        _Section('格式', [
-          _dropdown<OutFormat>('輸出格式', s.format, const {
-            OutFormat.same: '與原檔相同（BMP / TIFF / GIF 轉 PNG）',
+        _Section(l.secFormat, [
+          _dropdown<OutFormat>(l.outputFormat, s.format, {
+            OutFormat.same: l.formatSame,
             OutFormat.jpeg: 'JPEG',
             OutFormat.png: 'PNG',
             OutFormat.webp: 'WebP',
           }, off ? null : (v) => set(() => s.format = v)),
         ]),
-        _Section('位置', [
+        _Section(l.secLocation, [
           RadioGroup<bool>(
             groupValue: custom,
             onChanged: (v) {
@@ -474,19 +476,19 @@ class _OutputTabState extends State<_OutputTab> {
                 _pickDir();
               }
             },
-            child: const Column(
+            child: Column(
               children: [
                 RadioListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   value: false,
-                  title: Text('與原檔相同資料夾'),
+                  title: Text(l.sameFolder),
                 ),
                 RadioListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   value: true,
-                  title: Text('指定資料夾'),
+                  title: Text(l.customFolder),
                 ),
               ],
             ),
@@ -504,26 +506,26 @@ class _OutputTabState extends State<_OutputTab> {
                 ),
                 TextButton(
                   onPressed: off ? null : _pickDir,
-                  child: const Text('變更…'),
+                  child: Text(l.change),
                 ),
               ],
             ),
           if (custom)
             _switch(
-              '保留資料夾結構',
+              l.keepStructure,
               s.keepStructure,
               off ? null : (v) => set(() => s.keepStructure = v),
-              subtitle: '拖入資料夾時，依子資料夾分別輸出',
+              subtitle: l.keepStructureHelp,
             ),
         ]),
-        _Section('檔名', [
+        _Section(l.secFileName, [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: TextField(
               controller: _suffix,
               enabled: !off,
-              decoration: const InputDecoration(
-                labelText: '後綴',
+              decoration: InputDecoration(
+                labelText: l.suffix,
                 hintText: '_compressed',
                 isDense: true,
                 border: OutlineInputBorder(),
@@ -539,31 +541,31 @@ class _OutputTabState extends State<_OutputTab> {
           ),
           if (state.overwritesOriginal)
             Text(
-              '同資料夾且無後綴：會覆寫原檔（原檔先移到垃圾桶）',
+              l.overwriteWarning,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.error,
               ),
             ),
         ]),
-        _Section('中繼資料', [
+        _Section(l.secMetadata, [
           _switch(
-            '保留 EXIF 等中繼資料',
+            l.keepMetadata,
             s.keepMetadata,
             off ? null : (v) => set(() => s.keepMetadata = v),
-            subtitle: 'ICC 色彩描述檔一律保留',
+            subtitle: l.keepMetadataHelp,
           ),
           _switch(
-            '保留檔案日期',
+            l.keepDates,
             s.keepDates,
             off ? null : (v) => set(() => s.keepDates = v),
           ),
         ]),
-        _Section('其他', [
+        _Section(l.secOther, [
           _switch(
-            '壓縮後較大時保留原檔',
+            l.skipIfBigger,
             s.skipIfBigger,
             off ? null : (v) => set(() => s.skipIfBigger = v),
-            subtitle: '格式與尺寸不變時，改輸出原檔內容',
+            subtitle: l.skipIfBiggerHelp,
           ),
         ]),
       ],

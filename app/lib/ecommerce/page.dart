@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../src/rust/api/ecommerce.dart';
 import 'dialogs.dart';
 import 'section.dart';
@@ -58,12 +59,12 @@ class _EcommercePageState extends State<EcommercePage> {
           context: context,
           builder: (context) => AlertDialog(
             icon: const Icon(Icons.error_outline),
-            title: const Text('執行失敗'),
-            content: SelectableText(res.error ?? '未知錯誤'),
+            title: Text(context.l.runFailed),
+            content: SelectableText(errorText(context.l, res.error)),
             actions: [
               FilledButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('關閉'),
+                child: Text(context.l.close),
               ),
             ],
           ),
@@ -92,7 +93,18 @@ class _EcommercePageState extends State<EcommercePage> {
     );
   }
 
+  String _blockText(AppLocalizations l, EcomBlock b) => switch (b) {
+    EcomBlock.running => l.blockRunning,
+    EcomBlock.noName => l.blockNoName,
+    EcomBlock.badName => l.blockBadName,
+    EcomBlock.noPlatform => l.blockNoPlatform,
+    EcomBlock.noImages => l.blockNoImages,
+    EcomBlock.loading => l.blockLoading,
+    EcomBlock.unreadable => l.blockUnreadable,
+  };
+
   Widget _toolbar(BuildContext context) {
+    final l = context.l;
     final block = s.blockReason;
     return Container(
       alignment: Alignment.centerLeft,
@@ -107,9 +119,9 @@ class _EcommercePageState extends State<EcommercePage> {
             child: TextField(
               controller: _nameCtrl,
               enabled: !s.running,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'name',
-                hintText: '例如 223_ssd',
+                hintText: l.ecomNameHint,
                 isDense: true,
                 border: OutlineInputBorder(),
               ),
@@ -123,22 +135,22 @@ class _EcommercePageState extends State<EcommercePage> {
               onSelected: s.running ? null : (v) => s.togglePlatform(pf, v),
             ),
           Hint(
-            message: block ?? '',
+            message: block == null ? '' : _blockText(l, block),
             child: FilledButton.icon(
               onPressed: block == null ? _run : null,
               icon: const Icon(Icons.play_arrow_rounded),
-              label: const Text('執行'),
+              label: Text(l.ecomRun),
             ),
           ),
           Hint(
-            message: '設定',
+            message: l.settingsTooltip,
             child: IconButton(
               onPressed: s.running ? null : () => showEcomSettings(context, s),
               icon: const Icon(Icons.tune),
             ),
           ),
           Hint(
-            message: '全部清空',
+            message: l.ecomClearAll,
             child: IconButton(
               onPressed: s.running || s.totalCount == 0 ? null : s.clearAll,
               icon: const Icon(Icons.clear_all),
@@ -172,7 +184,10 @@ class _EcommercePageState extends State<EcommercePage> {
           TabBar(
             tabs: [
               for (final c in ImgCategory.values)
-                Tab(text: '${categoryLabel(c)} (${s.sections[c]!.length})'),
+                Tab(
+                  text:
+                      '${categoryLabel(context.l, c)} (${s.sections[c]!.length})',
+                ),
             ],
           ),
           Expanded(
@@ -193,26 +208,32 @@ class _EcommercePageState extends State<EcommercePage> {
 
   Widget _statusBar(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l;
     final p = s.progress;
     String text;
     double? value;
     if (s.running) {
       switch (p?.stage) {
         case EcomStage.encoding:
-          text = '壓縮中 ${p!.done} / ${p.total}';
+          text = l.ecomEncoding(p!.done, p.total);
           value = p.total == 0 ? null : p.done / p.total;
         case EcomStage.writing:
-          text = '寫入檔案…';
+          text = l.ecomWriting;
         default:
-          text = '讀取與排版…';
+          text = l.ecomPreparing;
       }
     } else {
       final st = s.settings;
       text =
-          '共 ${s.totalCount} 張 · 詳情圖上限 Shopee ${st.shopeeMaxDesc} / momo ${st.momoMaxDesc}'
-          ' · 智慧切點${st.smartCut ? '開' : '關'}'
-          ' · Shopee 最大寬 ${st.shopeeMaxWidth == 0 ? '不限' : st.shopeeMaxWidth}'
-          ' · 品質上限 ${st.maxQuality}${st.chroma444 ? ' · 4:4:4' : ''}';
+          l.ecomStatus(
+            s.totalCount,
+            st.shopeeMaxDesc,
+            st.momoMaxDesc,
+            st.smartCut ? l.on : l.off,
+            st.shopeeMaxWidth == 0 ? l.unlimited : '${st.shopeeMaxWidth}',
+            st.maxQuality,
+          ) +
+          (st.chroma444 ? ' · 4:4:4' : '');
     }
     return Material(
       color: theme.colorScheme.surfaceContainer,

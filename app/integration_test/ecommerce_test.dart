@@ -13,6 +13,7 @@ import 'package:image_compressor/ecommerce/dialogs.dart';
 import 'package:image_compressor/ecommerce/page.dart';
 import 'package:image_compressor/ecommerce/state.dart';
 import 'package:image_compressor/src/rust/api/ecommerce.dart';
+import 'package:image_compressor/l10n/l10n.dart';
 import 'package:image_compressor/src/rust/frb_generated.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
@@ -73,6 +74,9 @@ void main() {
         key: _shotKey,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
+          locale: const Locale('zh', 'TW'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF2E6BE6),
@@ -131,7 +135,7 @@ void main() {
       res = await state.run();
     });
     await tester.pump();
-    expect(res!.stage, EcomStage.done, reason: res!.error);
+    expect(res!.stage, EcomStage.done, reason: res!.error?.detail);
     final r = res!.report!;
     expect(r.overflow, isEmpty);
     expect(r.outputs.length, 21);

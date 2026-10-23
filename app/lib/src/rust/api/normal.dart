@@ -4,6 +4,7 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'common.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
@@ -46,8 +47,8 @@ class FileResult {
   final int width;
   final int height;
   final FileStatus status;
-  final String? error;
-  final List<String> warnings;
+  final AppError? error;
+  final List<WarningInfo> warnings;
 
   const FileResult({
     required this.index,
@@ -205,7 +206,7 @@ class PreviewResult {
   final int height;
   final BigInt originalSize;
   final int? quality;
-  final List<String> warnings;
+  final List<WarningInfo> warnings;
 
   const PreviewResult({
     required this.data,

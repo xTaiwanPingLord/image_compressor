@@ -3,6 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'api/common.dart';
 import 'api/ecommerce.dart';
 import 'api/files.dart';
 import 'api/normal.dart';
@@ -584,9 +585,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AppError dco_decode_app_error(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return AppError(
+      kind: dco_decode_error_kind(arr[0]),
+      detail: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
+  }
+
+  @protected
+  AppError dco_decode_box_autoadd_app_error(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_app_error(raw);
   }
 
   @protected
@@ -670,7 +689,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       done: dco_decode_u_32(arr[1]),
       total: dco_decode_u_32(arr[2]),
       report: dco_decode_opt_box_autoadd_ecom_report(arr[3]),
-      error: dco_decode_opt_String(arr[4]),
+      error: dco_decode_opt_box_autoadd_app_error(arr[4]),
     );
   }
 
@@ -714,6 +733,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ErrorKind dco_decode_error_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ErrorKind.values[raw as int];
+  }
+
+  @protected
   FileResult dco_decode_file_result(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -727,8 +752,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       width: dco_decode_u_32(arr[4]),
       height: dco_decode_u_32(arr[5]),
       status: dco_decode_file_status(arr[6]),
-      error: dco_decode_opt_String(arr[7]),
-      warnings: dco_decode_list_String(arr[8]),
+      error: dco_decode_opt_box_autoadd_app_error(arr[7]),
+      warnings: dco_decode_list_warning_info(arr[8]),
     );
   }
 
@@ -748,6 +773,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int dco_decode_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
+  }
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeI64(raw);
   }
 
   @protected
@@ -808,6 +839,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Int64List dco_decode_list_prim_i_64_strict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeInt64List(raw);
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
@@ -817,6 +854,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<ShopPlatform> dco_decode_list_shop_platform(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_shop_platform).toList();
+  }
+
+  @protected
+  List<WarningInfo> dco_decode_list_warning_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_warning_info).toList();
   }
 
   @protected
@@ -864,6 +907,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AppError? dco_decode_opt_box_autoadd_app_error(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_app_error(raw);
+  }
+
+  @protected
   EcomReport? dco_decode_opt_box_autoadd_ecom_report(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_ecom_report(raw);
@@ -895,7 +944,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       height: dco_decode_u_32(arr[4]),
       bytes: dco_decode_u_64(arr[5]),
       quality: dco_decode_u_8(arr[6]),
-      warnings: dco_decode_list_String(arr[7]),
+      warnings: dco_decode_list_warning_info(arr[7]),
     );
   }
 
@@ -925,7 +974,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       height: dco_decode_u_32(arr[3]),
       originalSize: dco_decode_u_64(arr[4]),
       quality: dco_decode_opt_box_autoadd_u_8(arr[5]),
-      warnings: dco_decode_list_String(arr[6]),
+      warnings: dco_decode_list_warning_info(arr[6]),
     );
   }
 
@@ -966,6 +1015,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WarningInfo dco_decode_warning_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return WarningInfo(
+      code: dco_decode_String(arr[0]),
+      args: dco_decode_list_prim_i_64_strict(arr[1]),
+    );
+  }
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_String(deserializer);
@@ -996,9 +1057,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AppError sse_decode_app_error(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_kind = sse_decode_error_kind(deserializer);
+    var var_detail = sse_decode_String(deserializer);
+    return AppError(kind: var_kind, detail: var_detail);
+  }
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  AppError sse_decode_box_autoadd_app_error(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_app_error(deserializer));
   }
 
   @protected
@@ -1078,7 +1153,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_done = sse_decode_u_32(deserializer);
     var var_total = sse_decode_u_32(deserializer);
     var var_report = sse_decode_opt_box_autoadd_ecom_report(deserializer);
-    var var_error = sse_decode_opt_String(deserializer);
+    var var_error = sse_decode_opt_box_autoadd_app_error(deserializer);
     return EcomProgress(
       stage: var_stage,
       done: var_done,
@@ -1136,6 +1211,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ErrorKind sse_decode_error_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ErrorKind.values[inner];
+  }
+
+  @protected
   FileResult sse_decode_file_result(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_index = sse_decode_u_32(deserializer);
@@ -1145,8 +1227,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_width = sse_decode_u_32(deserializer);
     var var_height = sse_decode_u_32(deserializer);
     var var_status = sse_decode_file_status(deserializer);
-    var var_error = sse_decode_opt_String(deserializer);
-    var var_warnings = sse_decode_list_String(deserializer);
+    var var_error = sse_decode_opt_box_autoadd_app_error(deserializer);
+    var var_warnings = sse_decode_list_warning_info(deserializer);
     return FileResult(
       index: var_index,
       output: var_output,
@@ -1178,6 +1260,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int sse_decode_i_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getInt32();
+  }
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getPlatformInt64();
   }
 
   @protected
@@ -1279,6 +1367,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Int64List sse_decode_list_prim_i_64_strict(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getInt64List(len_);
+  }
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
@@ -1295,6 +1390,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <ShopPlatform>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_shop_platform(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<WarningInfo> sse_decode_list_warning_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WarningInfo>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_warning_info(deserializer));
     }
     return ans_;
   }
@@ -1358,6 +1465,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AppError? sse_decode_opt_box_autoadd_app_error(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_app_error(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   EcomReport? sse_decode_opt_box_autoadd_ecom_report(
     SseDeserializer deserializer,
   ) {
@@ -1398,7 +1516,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_height = sse_decode_u_32(deserializer);
     var var_bytes = sse_decode_u_64(deserializer);
     var var_quality = sse_decode_u_8(deserializer);
-    var var_warnings = sse_decode_list_String(deserializer);
+    var var_warnings = sse_decode_list_warning_info(deserializer);
     return OutputInfo(
       platform: var_platform,
       category: var_category,
@@ -1433,7 +1551,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_height = sse_decode_u_32(deserializer);
     var var_originalSize = sse_decode_u_64(deserializer);
     var var_quality = sse_decode_opt_box_autoadd_u_8(deserializer);
-    var var_warnings = sse_decode_list_String(deserializer);
+    var var_warnings = sse_decode_list_warning_info(deserializer);
     return PreviewResult(
       data: var_data,
       ext: var_ext,
@@ -1480,6 +1598,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_decode_unit(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  WarningInfo sse_decode_warning_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_code = sse_decode_String(deserializer);
+    var var_args = sse_decode_list_prim_i_64_strict(deserializer);
+    return WarningInfo(code: var_code, args: var_args);
   }
 
   @protected
@@ -1532,9 +1658,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_app_error(AppError self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_error_kind(self.kind, serializer);
+    sse_encode_String(self.detail, serializer);
+  }
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_app_error(
+    AppError self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_app_error(self, serializer);
   }
 
   @protected
@@ -1608,7 +1750,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.done, serializer);
     sse_encode_u_32(self.total, serializer);
     sse_encode_opt_box_autoadd_ecom_report(self.report, serializer);
-    sse_encode_opt_String(self.error, serializer);
+    sse_encode_opt_box_autoadd_app_error(self.error, serializer);
   }
 
   @protected
@@ -1641,6 +1783,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_error_kind(ErrorKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_file_result(FileResult self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_32(self.index, serializer);
@@ -1650,8 +1798,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.width, serializer);
     sse_encode_u_32(self.height, serializer);
     sse_encode_file_status(self.status, serializer);
-    sse_encode_opt_String(self.error, serializer);
-    sse_encode_list_String(self.warnings, serializer);
+    sse_encode_opt_box_autoadd_app_error(self.error, serializer);
+    sse_encode_list_warning_info(self.warnings, serializer);
   }
 
   @protected
@@ -1670,6 +1818,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putInt32(self);
+  }
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putPlatformInt64(self);
   }
 
   @protected
@@ -1758,6 +1912,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_prim_i_64_strict(
+    Int64List self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putInt64List(self);
+  }
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
     SseSerializer serializer,
@@ -1776,6 +1940,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_shop_platform(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_warning_info(
+    List<WarningInfo> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_warning_info(item, serializer);
     }
   }
 
@@ -1818,6 +1994,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_app_error(
+    AppError? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_app_error(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_ecom_report(
     EcomReport? self,
     SseSerializer serializer,
@@ -1856,7 +2045,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.height, serializer);
     sse_encode_u_64(self.bytes, serializer);
     sse_encode_u_8(self.quality, serializer);
-    sse_encode_list_String(self.warnings, serializer);
+    sse_encode_list_warning_info(self.warnings, serializer);
   }
 
   @protected
@@ -1876,7 +2065,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.height, serializer);
     sse_encode_u_64(self.originalSize, serializer);
     sse_encode_opt_box_autoadd_u_8(self.quality, serializer);
-    sse_encode_list_String(self.warnings, serializer);
+    sse_encode_list_warning_info(self.warnings, serializer);
   }
 
   @protected
@@ -1912,5 +2101,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  void sse_encode_warning_info(WarningInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.code, serializer);
+    sse_encode_list_prim_i_64_strict(self.args, serializer);
   }
 }

@@ -13,6 +13,13 @@
 雙擊 `build_windows.bat`：檢查開發人員模式 → `flutter build windows --release` → 成功後自動開啟 App。
 執行檔在 `app\build\windows\x64\runner\Release\image_compressor.exe`（整個 Release 資料夾一起複製才能在別台電腦執行）。記錄寫在 `build_windows.log`。
 
+### 多語系、主題與字體
+
+- 設定頁：語言（繁體中文 / 简体中文 / English）、主題（自動 / 淺色 / 深色）、色彩（10 色或跟隨系統：Android 12+ 桌布色、Windows / macOS 強調色）、字體（系統預設 / 內建 MiSans TC）
+- 介面文字在 `app/lib/l10n/app_zh.arb`（繁中，範本）、`app_zh_CN.arb`、`app_en.arb`；修改後執行 `flutter gen-l10n`
+- Rust 端的警告與錯誤以代碼傳到 UI 再翻譯（`imgcore::warn::Warn`、`ErrorInfo`）
+- MiSans TC（小米 MiSans 字體，免費商用，需在軟體中註明）：`app/assets/fonts/`，Regular / Medium / Semibold / Bold
+
 修改 `app/rust/src/api` 後需重新產生 binding：`cd app && flutter_rust_bridge_codegen generate`（需先 `cargo install flutter_rust_bridge_codegen --version 2.13.0`）。
 
 ## 建置（Windows）

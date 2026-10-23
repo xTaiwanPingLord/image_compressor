@@ -1,7 +1,7 @@
 //! 普通模式：對照 Caesium 的壓縮 / 縮放 / 輸出設定。
 
 use crate::cleanup::{self, Disposal};
-use crate::{Error, Result, exif, jpeg_lossless};
+use crate::{Error, Result, exif, jpeg_lossless, warn::Warn};
 use image::{
     DynamicImage, ImageDecoder, ImageEncoder, ImageFormat, ImageReader, RgbaImage,
     metadata::Orientation,
@@ -135,7 +135,7 @@ pub struct Compressed {
     pub height: u32,
     /// 實際使用的品質（無損為 None）
     pub quality: Option<u8>,
-    pub warnings: Vec<String>,
+    pub warnings: Vec<Warn>,
 }
 
 /// 依縮放設定計算輸出尺寸。
@@ -442,7 +442,7 @@ pub fn compress_bytes(data: &[u8], o: &Options) -> Result<Compressed> {
 
     let dec = decode(data)?;
     if matches!(in_fmt, Some(ImageFormat::Gif)) {
-        warnings.push("GIF 只取第一格".into());
+        warnings.push(Warn::GifFirstFrame);
     }
     let mut rgba = dec.img.to_rgba8();
     let (tw, th) = target_size(rgba.width(), rgba.height(), o);
@@ -489,7 +489,7 @@ pub fn compress_bytes(data: &[u8], o: &Options) -> Result<Compressed> {
 
     if o.lossless {
         if kind == Kind::Jpeg {
-            warnings.push("JPEG 需重新編碼（縮放或轉檔），以品質 100、4:4:4 輸出".into());
+            warnings.push(Warn::JpegReencoded);
         }
         let q = if kind == Kind::Jpeg { Some(100) } else { None };
         let out = encode_q(if kind == Kind::Jpeg { q } else { None })?;
@@ -540,11 +540,10 @@ pub fn compress_bytes(data: &[u8], o: &Options) -> Result<Compressed> {
             }
             let bottom = encode_q(lossy_q(1))?;
             if bottom.len() as u64 > max {
-                warnings.push(format!(
-                    "品質降到 1 仍有 {} bytes，超過目標 {}",
-                    bottom.len(),
-                    max
-                ));
+                warnings.push(Warn::TargetNotReached {
+                    bytes: bottom.len() as u64,
+                    target: max,
+                });
                 return Ok(Compressed {
                     data: bottom,
                     kind,
@@ -614,8 +613,8 @@ pub struct FileResult {
     pub width: u32,
     pub height: u32,
     pub status: Status,
-    pub error: Option<String>,
-    pub warnings: Vec<String>,
+    pub error: Option<crate::ErrorInfo>,
+    pub warnings: Vec<Warn>,
 }
 
 fn same_file(a: &Path, b: &Path) -> bool {
@@ -686,7 +685,7 @@ pub fn process_file(input: &Path, base: Option<&Path>, o: &Options, how: Disposa
     })();
     if let Err(e) = res {
         r.status = Status::Failed;
-        r.error = Some(e.to_string());
+        r.error = Some((&e).into());
     }
     r
 }

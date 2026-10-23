@@ -3,20 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/l10n.dart';
 import '../src/rust/api/ecommerce.dart';
-import 'section.dart';
 import 'state.dart';
-
-String platformLabel(ShopPlatform p) => switch (p) {
-  ShopPlatform.shopee => 'Shopee',
-  ShopPlatform.momo => 'momo',
-};
-
-String formatBytes(num b) {
-  if (b >= 1000 * 1000) return '${(b / 1000 / 1000).toStringAsFixed(2)} MB';
-  if (b >= 1000) return '${(b / 1000).toStringAsFixed(0)} KB';
-  return '$b B';
-}
 
 /// 用系統檔案管理員開啟資料夾。
 Future<void> openFolder(String path) async {
@@ -92,7 +81,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: (v) {
           final n = int.tryParse(v ?? '');
-          if (n == null) return '請輸入數字';
+          if (n == null) return context.l.enterNumber;
           return check(n);
         },
       ),
@@ -134,8 +123,9 @@ class _SettingsDialogState extends State<_SettingsDialog> {
   Widget build(BuildContext context) {
     final shopeeLimit = descLimit(platform: ShopPlatform.shopee);
     final momoLimit = descLimit(platform: ShopPlatform.momo);
+    final l = context.l;
     return AlertDialog(
-      title: const Text('電商模式設定'),
+      title: Text(l.ecomSettingsTitle),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -147,42 +137,46 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                 const SizedBox(height: 8),
                 _num(
                   _shopeeMax,
-                  'Shopee 詳情圖最多張數',
-                  '1–$shopeeLimit',
-                  (n) => n < 1 || n > shopeeLimit ? '需在 1–$shopeeLimit' : null,
+                  l.ecomShopeeMaxDesc,
+                  l.rangeHelp(1, shopeeLimit),
+                  (n) => n < 1 || n > shopeeLimit
+                      ? l.rangeError(1, shopeeLimit)
+                      : null,
                 ),
                 _num(
                   _momoMax,
-                  'momo 詳情圖最多張數',
-                  '1–$momoLimit（預設 18，保留空間給店家資訊圖）',
-                  (n) => n < 1 || n > momoLimit ? '需在 1–$momoLimit' : null,
+                  l.ecomMomoMaxDesc,
+                  l.ecomMomoMaxDescHelp(1, momoLimit),
+                  (n) => n < 1 || n > momoLimit
+                      ? l.rangeError(1, momoLimit)
+                      : null,
                 ),
                 _num(
                   _shopeeWidth,
-                  'Shopee 最大寬度（px）',
-                  '0 = 不限制；Shopee 前台約顯示到 1750',
-                  (n) => n != 0 && n < 750 ? '需為 0 或 ≥ 750' : null,
+                  l.ecomShopeeMaxWidth,
+                  l.ecomShopeeMaxWidthHelp,
+                  (n) => n != 0 && n < 750 ? l.ecomShopeeMaxWidthError : null,
                 ),
                 _num(
                   _momoMinLast,
-                  'momo 詳情圖尾段最小高度（px）',
-                  '低於此高度時從前一段挪高度；0 = 保持實際高度',
-                  (n) => n >= 1500 ? '需小於 1500' : null,
+                  l.ecomMomoMinLast,
+                  l.ecomMomoMinLastHelp,
+                  (n) => n >= 1500 ? l.ecomMomoMinLastError : null,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    '品質',
+                    l.ecomQuality,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
                 Text(
-                  '每張圖各自搜尋「符合大小限制的最高品質」，不超過下方上限',
+                  l.ecomQualityHelp,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 Row(
                   children: [
-                    const SizedBox(width: 72, child: Text('品質上限')),
+                    SizedBox(width: 96, child: Text(l.ecomMaxQuality)),
                     Expanded(
                       child: Slider(
                         value: _maxQ,
@@ -203,28 +197,28 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('色度 4:4:4'),
-                  subtitle: const Text('文字與細線邊緣較清晰（尤其紅字），檔案較大'),
+                  title: Text(l.ecomChroma444),
+                  subtitle: Text(l.ecomChroma444Help),
                   value: _c444,
                   onChanged: (v) => setState(() => _c444 = v),
                 ),
                 const Divider(),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('智慧切點'),
-                  subtitle: const Text('切段處往上 150px 內找最接近純色的橫列下刀，避免切到文字'),
+                  title: Text(l.ecomSmartCut),
+                  subtitle: Text(l.ecomSmartCutHelp),
                   value: _smart,
                   onChanged: (v) => setState(() => _smart = v),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Expanded(child: Text('新加入圖片的預設處理')),
+                    Expanded(child: Text(l.ecomDefaultFit)),
                     SegmentedButton<Fit>(
                       showSelectedIcon: false,
-                      segments: const [
-                        ButtonSegment(value: Fit.pad, label: Text('補白')),
-                        ButtonSegment(value: Fit.crop, label: Text('裁切')),
+                      segments: [
+                        ButtonSegment(value: Fit.pad, label: Text(l.pad)),
+                        ButtonSegment(value: Fit.crop, label: Text(l.crop)),
                       ],
                       selected: {_fit},
                       onSelectionChanged: (v) => setState(() => _fit = v.first),
@@ -237,12 +231,12 @@ class _SettingsDialogState extends State<_SettingsDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: _resetDefaults, child: const Text('還原預設')),
+        TextButton(onPressed: _resetDefaults, child: Text(l.resetDefaults)),
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
+          child: Text(l.cancel),
         ),
-        FilledButton(onPressed: _save, child: const Text('儲存')),
+        FilledButton(onPressed: _save, child: Text(l.save)),
       ],
     );
   }
@@ -255,23 +249,27 @@ Future<void> showOverflow(BuildContext context, EcomReport r) {
     context: context,
     builder: (context) => AlertDialog(
       icon: const Icon(Icons.warning_amber_rounded),
-      title: const Text('詳情圖張數超過上限'),
+      title: Text(context.l.ecomOverflowTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (final o in r.overflow)
             Text(
-              '${platformLabel(o.platform)}：會切成 ${o.count} 張，上限 ${o.limit} 張',
+              context.l.ecomOverflowLine(
+                platformLabel(o.platform),
+                o.count,
+                o.limit,
+              ),
             ),
           const SizedBox(height: 12),
-          const Text('整批未輸出任何檔案。請刪減詳情圖，或到設定調整上限後重試。'),
+          Text(context.l.ecomOverflowHelp),
         ],
       ),
       actions: [
         FilledButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('知道了'),
+          child: Text(context.l.gotIt),
         ),
       ],
     ),
@@ -295,12 +293,13 @@ class _ResultDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l = context.l;
     final warnCount = report.outputs.where((o) => o.warnings.isNotEmpty).length;
     final platforms = report.outputs.map((o) => o.platform).toSet().toList()
       ..sort((a, b) => a.index.compareTo(b.index));
 
     return AlertDialog(
-      title: Text('已輸出 ${report.writtenCount} 個檔案'),
+      title: Text(l.ecomResultTitle(report.writtenCount)),
       content: SizedBox(
         width: 640,
         height: 440,
@@ -310,14 +309,14 @@ class _ResultDialog extends StatelessWidget {
             Text(report.outputRoot, style: theme.textTheme.bodySmall),
             if (report.disposedCount > 0)
               Text(
-                '已將 ${report.disposedCount} 個舊檔移到垃圾桶',
+                l.ecomDisposed(report.disposedCount),
                 style: theme.textTheme.bodySmall,
               ),
             if (warnCount > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  '$warnCount 個檔案有警告',
+                  l.ecomWarnCount(warnCount),
                   style: TextStyle(color: scheme.error),
                 ),
               ),
@@ -355,11 +354,11 @@ class _ResultDialog extends StatelessWidget {
                   : report.outputRoot,
             );
           },
-          child: const Text('開啟資料夾'),
+          child: Text(l.openFolder),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('關閉'),
+          child: Text(l.close),
         ),
       ],
     );
@@ -384,7 +383,7 @@ class _OutputRow extends StatelessWidget {
             children: [
               SizedBox(
                 width: 56,
-                child: Text(categoryLabel(o.category), style: small),
+                child: Text(categoryLabel(context.l, o.category), style: small),
               ),
               Expanded(
                 child: Text(o.fileName, style: theme.textTheme.bodyMedium),
@@ -418,7 +417,10 @@ class _OutputRow extends StatelessWidget {
           for (final w in o.warnings)
             Padding(
               padding: const EdgeInsets.only(left: 56),
-              child: Text('⚠ $w', style: small?.copyWith(color: scheme.error)),
+              child: Text(
+                '⚠ ${warningText(context.l, w)}',
+                style: small?.copyWith(color: scheme.error),
+              ),
             ),
         ],
       ),
