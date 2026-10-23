@@ -208,12 +208,20 @@ class EcomSettings {
   /// 0 = 保持實際高度
   final int momoMinLast;
 
+  /// 品質上限（60–100）；每張圖各自找符合大小限制的最高品質
+  final int maxQuality;
+
+  /// 色度 4:4:4
+  final bool chroma444;
+
   const EcomSettings({
     required this.shopeeMaxDesc,
     required this.momoMaxDesc,
     required this.smartCut,
     required this.shopeeMaxWidth,
     required this.momoMinLast,
+    required this.maxQuality,
+    required this.chroma444,
   });
 
   @override
@@ -222,7 +230,9 @@ class EcomSettings {
       momoMaxDesc.hashCode ^
       smartCut.hashCode ^
       shopeeMaxWidth.hashCode ^
-      momoMinLast.hashCode;
+      momoMinLast.hashCode ^
+      maxQuality.hashCode ^
+      chroma444.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -233,7 +243,9 @@ class EcomSettings {
           momoMaxDesc == other.momoMaxDesc &&
           smartCut == other.smartCut &&
           shopeeMaxWidth == other.shopeeMaxWidth &&
-          momoMinLast == other.momoMinLast;
+          momoMinLast == other.momoMinLast &&
+          maxQuality == other.maxQuality &&
+          chroma444 == other.chroma444;
 }
 
 enum EcomStage { preparing, encoding, writing, done, failed }

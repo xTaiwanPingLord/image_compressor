@@ -63,8 +63,10 @@ pub struct Settings {
     pub shopee_min_quality: u8,
     /// momo 品質下限（只調品質）
     pub momo_min_quality: u8,
-    /// 起始（最高）品質
+    /// 品質上限：每張圖各自二分搜尋「符合大小限制的最高品質」，不超過此值
     pub max_quality: u8,
+    /// 色度 4:4:4（文字 / 細線邊緣較清晰，檔案較大）
+    pub chroma444: bool,
     /// Shopee 輸出最大寬度（0 = 不限制）
     pub shopee_max_width: u32,
     /// momo 詳情圖最後一段低於此高度時從前一段挪高度（0 = 保持實際高度）
@@ -80,6 +82,7 @@ impl Default for Settings {
             shopee_min_quality: 60,
             momo_min_quality: 10,
             max_quality: 92,
+            chroma444: false,
             shopee_max_width: 2000,
             momo_min_last: detail::MOMO_DEFAULT_MIN_LAST,
         }
@@ -274,6 +277,7 @@ pub fn prepare(job: &Job) -> Result<Prepared> {
                     min_quality: s.shopee_min_quality,
                     max_quality: s.max_quality,
                     allow_downscale: true,
+                    chroma444: s.chroma444,
                 };
                 (t.clone(), t)
             }
@@ -284,6 +288,7 @@ pub fn prepare(job: &Job) -> Result<Prepared> {
                     min_quality: s.momo_min_quality,
                     max_quality: s.max_quality,
                     allow_downscale: false,
+                    chroma444: s.chroma444,
                 },
                 Target {
                     max_bytes: MOMO_MAX_BYTES,
@@ -291,6 +296,7 @@ pub fn prepare(job: &Job) -> Result<Prepared> {
                     min_quality: s.momo_min_quality,
                     max_quality: s.max_quality,
                     allow_downscale: false,
+                    chroma444: s.chroma444,
                 },
             ),
         };

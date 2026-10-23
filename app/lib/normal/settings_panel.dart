@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import '../src/rust/api/normal.dart';
 import 'state.dart';
 
-/// 右側設定：壓縮 / 縮放 / 輸出 三分頁。
+/// 右側設定：壓縮（含縮放）/ 輸出（含中繼資料）兩分頁。
 class NormalSettingsPanel extends StatelessWidget {
   const NormalSettingsPanel({super.key, required this.state});
   final NormalState state;
@@ -15,13 +15,12 @@ class NormalSettingsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Column(
         children: [
           const TabBar(
             tabs: [
               Tab(text: '壓縮'),
-              Tab(text: '縮放'),
               Tab(text: '輸出'),
             ],
           ),
@@ -31,7 +30,6 @@ class NormalSettingsPanel extends StatelessWidget {
               builder: (context, _) => TabBarView(
                 children: [
                   _CompressionTab(state: state),
-                  _ResizeTab(state: state),
                   _OutputTab(state: state),
                 ],
               ),
@@ -302,6 +300,7 @@ class _CompressionTab extends StatelessWidget {
               onCommit: (v) => set(() => s.maxSize = v * 1000),
             ),
         ]),
+        _ResizeSection(state: state),
         _Section('JPEG', [
           _dropdown<ChromaSubsampling>('色度取樣', s.jpegChroma, const {
             ChromaSubsampling.auto: '自動（品質 ≥ 90 用 4:4:4）',
@@ -324,28 +323,15 @@ class _CompressionTab extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ]),
-        _Section('中繼資料', [
-          _switch(
-            '保留 EXIF 等中繼資料',
-            s.keepMetadata,
-            off ? null : (v) => set(() => s.keepMetadata = v),
-            subtitle: 'ICC 色彩描述檔一律保留',
-          ),
-          _switch(
-            '保留檔案日期',
-            s.keepDates,
-            off ? null : (v) => set(() => s.keepDates = v),
-          ),
-        ]),
       ],
     );
   }
 }
 
-// ---------------- 縮放 ----------------
+// ---------------- 縮放（放在壓縮分頁內） ----------------
 
-class _ResizeTab extends StatelessWidget {
-  const _ResizeTab({required this.state});
+class _ResizeSection extends StatelessWidget {
+  const _ResizeSection({required this.state});
   final NormalState state;
 
   @override
@@ -368,71 +354,63 @@ class _ResizeTab extends StatelessWidget {
       ResizeMode.none => '',
     };
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: [
-        _Section('縮放方式', [
-          _dropdown<ResizeMode>(
-            '方式',
-            s.resize,
-            const {
-              ResizeMode.none: '不縮放',
-              ResizeMode.percentage: '百分比',
-              ResizeMode.width: '固定寬度',
-              ResizeMode.height: '固定高度',
-              ResizeMode.longEdge: '長邊',
-              ResizeMode.shortEdge: '短邊',
-              ResizeMode.fitBox: '縮放到框內（寬 × 高）',
-            },
-            off
-                ? null
-                : (v) => set(() {
-                    s.resize = v;
-                    if (v == ResizeMode.percentage && s.resizeValue > 400) {
-                      s.resizeValue = 50;
-                    }
-                    if (v != ResizeMode.percentage &&
-                        v != ResizeMode.none &&
-                        s.resizeValue <= 100) {
-                      s.resizeValue = 1920;
-                    }
-                    if (v == ResizeMode.fitBox && s.resizeValue2 == 0) {
-                      s.resizeValue2 = 1920;
-                    }
-                  }),
-          ),
-          if (s.resize != ResizeMode.none)
-            _DebouncedNumber(
-              key: ValueKey('rv-${s.resize}'),
-              label: label(s.resize),
-              suffix: unit,
-              value: s.resizeValue,
-              enabled: !off,
-              onCommit: (v) => set(() => s.resizeValue = v),
-            ),
-          if (s.resize == ResizeMode.fitBox)
-            _DebouncedNumber(
-              label: '高度上限',
-              suffix: 'px',
-              value: s.resizeValue2,
-              enabled: !off,
-              onCommit: (v) => set(() => s.resizeValue2 = v),
-            ),
-          if (s.resize != ResizeMode.none)
-            _switch(
-              '不放大',
-              s.noEnlarge,
-              off ? null : (v) => set(() => s.noEnlarge = v),
-              subtitle: '比目標小的圖片維持原尺寸',
-            ),
-          const SizedBox(height: 8),
-          Text(
-            '一律等比縮放（Lanczos3）',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ]),
-      ],
-    );
+    return _Section('縮放', [
+      _dropdown<ResizeMode>(
+        '縮放方式',
+        s.resize,
+        const {
+          ResizeMode.none: '不縮放',
+          ResizeMode.percentage: '百分比',
+          ResizeMode.width: '固定寬度',
+          ResizeMode.height: '固定高度',
+          ResizeMode.longEdge: '長邊',
+          ResizeMode.shortEdge: '短邊',
+          ResizeMode.fitBox: '縮放到框內（寬 × 高）',
+        },
+        off
+            ? null
+            : (v) => set(() {
+                s.resize = v;
+                if (v == ResizeMode.percentage && s.resizeValue > 400) {
+                  s.resizeValue = 50;
+                }
+                if (v != ResizeMode.percentage &&
+                    v != ResizeMode.none &&
+                    s.resizeValue <= 100) {
+                  s.resizeValue = 1920;
+                }
+                if (v == ResizeMode.fitBox && s.resizeValue2 == 0) {
+                  s.resizeValue2 = 1920;
+                }
+              }),
+      ),
+      if (s.resize != ResizeMode.none)
+        _DebouncedNumber(
+          key: ValueKey('rv-${s.resize}'),
+          label: label(s.resize),
+          suffix: unit,
+          value: s.resizeValue,
+          enabled: !off,
+          onCommit: (v) => set(() => s.resizeValue = v),
+        ),
+      if (s.resize == ResizeMode.fitBox)
+        _DebouncedNumber(
+          label: '高度上限',
+          suffix: 'px',
+          value: s.resizeValue2,
+          enabled: !off,
+          onCommit: (v) => set(() => s.resizeValue2 = v),
+        ),
+      if (s.resize != ResizeMode.none)
+        _switch(
+          '不放大',
+          s.noEnlarge,
+          off ? null : (v) => set(() => s.noEnlarge = v),
+          subtitle: '比目標小的圖片維持原尺寸',
+        ),
+      const SizedBox(height: 8),
+      Text('一律等比縮放（Lanczos3）', style: Theme.of(context).textTheme.bodySmall),
+    ]);
   }
 }
 
@@ -563,6 +541,19 @@ class _OutputTabState extends State<_OutputTab> {
                 color: theme.colorScheme.error,
               ),
             ),
+        ]),
+        _Section('中繼資料', [
+          _switch(
+            '保留 EXIF 等中繼資料',
+            s.keepMetadata,
+            off ? null : (v) => set(() => s.keepMetadata = v),
+            subtitle: 'ICC 色彩描述檔一律保留',
+          ),
+          _switch(
+            '保留檔案日期',
+            s.keepDates,
+            off ? null : (v) => set(() => s.keepDates = v),
+          ),
         ]),
         _Section('其他', [
           _switch(

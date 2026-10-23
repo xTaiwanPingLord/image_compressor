@@ -694,14 +694,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   EcomSettings dco_decode_ecom_settings(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return EcomSettings(
       shopeeMaxDesc: dco_decode_u_32(arr[0]),
       momoMaxDesc: dco_decode_u_32(arr[1]),
       smartCut: dco_decode_bool(arr[2]),
       shopeeMaxWidth: dco_decode_u_32(arr[3]),
       momoMinLast: dco_decode_u_32(arr[4]),
+      maxQuality: dco_decode_u_8(arr[5]),
+      chroma444: dco_decode_bool(arr[6]),
     );
   }
 
@@ -1113,12 +1115,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_smartCut = sse_decode_bool(deserializer);
     var var_shopeeMaxWidth = sse_decode_u_32(deserializer);
     var var_momoMinLast = sse_decode_u_32(deserializer);
+    var var_maxQuality = sse_decode_u_8(deserializer);
+    var var_chroma444 = sse_decode_bool(deserializer);
     return EcomSettings(
       shopeeMaxDesc: var_shopeeMaxDesc,
       momoMaxDesc: var_momoMaxDesc,
       smartCut: var_smartCut,
       shopeeMaxWidth: var_shopeeMaxWidth,
       momoMinLast: var_momoMinLast,
+      maxQuality: var_maxQuality,
+      chroma444: var_chroma444,
     );
   }
 
@@ -1624,6 +1630,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self.smartCut, serializer);
     sse_encode_u_32(self.shopeeMaxWidth, serializer);
     sse_encode_u_32(self.momoMinLast, serializer);
+    sse_encode_u_8(self.maxQuality, serializer);
+    sse_encode_bool(self.chroma444, serializer);
   }
 
   @protected

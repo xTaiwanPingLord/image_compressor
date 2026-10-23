@@ -72,6 +72,12 @@ enum Cmd {
         /// 智慧切點（切段處往上 150px 找最接近純色的橫列）
         #[arg(long)]
         smart_cut: bool,
+        /// 品質上限（每張圖各自找符合大小限制的最高品質，不超過此值）
+        #[arg(long, default_value_t = 92)]
+        max_quality: u8,
+        /// 色度 4:4:4（文字邊緣較清晰、檔案較大）
+        #[arg(long)]
+        chroma444: bool,
         /// 輸出根目錄（預設：圖片最多的來源資料夾）
         #[arg(long)]
         out: Option<PathBuf>,
@@ -255,6 +261,8 @@ fn main() -> ExitCode {
             shopee_max_width,
             momo_min_last,
             smart_cut,
+            max_quality,
+            chroma444,
             out,
             keep_order,
             dry_run,
@@ -311,6 +319,8 @@ fn main() -> ExitCode {
                     shopee_max_desc: shopee_max,
                     momo_max_desc: momo_max,
                     smart_cut,
+                    max_quality,
+                    chroma444,
                     shopee_max_width,
                     momo_min_last,
                     ..Settings::default()

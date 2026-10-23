@@ -61,7 +61,8 @@ class _NormalPageState extends State<NormalPage> {
     final pct = sum.before == 0 ? 0 : saved / sum.before * 100;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        duration: const Duration(seconds: 8),
+        duration: const Duration(seconds: 6),
+        persist: false, // 有按鈕時預設不會自動消失
         content: Text(
           '完成 ${sum.done}${sum.kept > 0 ? '，保留原檔 ${sum.kept}' : ''}${sum.failed > 0 ? '，失敗 ${sum.failed}' : ''}'
           ' · ${formatBytes(sum.before)} → ${formatBytes(sum.after)}（−${pct.toStringAsFixed(1)}%）',
@@ -150,15 +151,16 @@ class _NormalPageState extends State<NormalPage> {
             onPressed: off ? null : _addFolder,
             icon: const Icon(Icons.create_new_folder_outlined),
           ),
-          IconButton(
-            tooltip: '移除選取',
-            onPressed: off || s.selected.isEmpty ? null : s.removeSelected,
-            icon: const Icon(Icons.remove_circle_outline),
-          ),
-          IconButton(
-            tooltip: '清空清單',
+          const SizedBox(width: 8),
+          OutlinedButton.icon(
             onPressed: off || s.items.isEmpty ? null : s.clear,
             icon: const Icon(Icons.clear_all),
+            label: const Text('清空全部'),
+          ),
+          OutlinedButton.icon(
+            onPressed: off || s.selected.isEmpty ? null : s.removeSelected,
+            icon: const Icon(Icons.remove_circle_outline),
+            label: Text('移除選取（${s.selected.length}）'),
           ),
           if (!wide)
             IconButton(

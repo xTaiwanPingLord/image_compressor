@@ -14,9 +14,10 @@ if ($dev -ne 1) {
 }
 
 Set-Location (Join-Path $root 'app')
+# 增量建置時圖示字型可能沒重新產生，改用完整字型（約 1.6 MB）
 $sw = [Diagnostics.Stopwatch]::StartNew()
 cmd /c "flutter pub get 2>&1" | ForEach-Object { Log $_ }
-cmd /c "flutter build windows --release 2>&1" | ForEach-Object { Log $_ }
+cmd /c "flutter build windows --release --no-tree-shake-icons 2>&1" | ForEach-Object { Log $_ }
 $code = $LASTEXITCODE
 Log "build exit=$code ($([int]$sw.Elapsed.TotalSeconds)s)"
 $exe = Join-Path $root 'app\build\windows\x64\runner\Release\image_compressor.exe'

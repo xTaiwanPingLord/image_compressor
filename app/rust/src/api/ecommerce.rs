@@ -77,6 +77,10 @@ pub struct EcomSettings {
     pub shopee_max_width: u32,
     /// 0 = 保持實際高度
     pub momo_min_last: u32,
+    /// 品質上限（60–100）；每張圖各自找符合大小限制的最高品質
+    pub max_quality: u8,
+    /// 色度 4:4:4
+    pub chroma444: bool,
 }
 
 #[flutter_rust_bridge::frb(sync)]
@@ -88,6 +92,8 @@ pub fn default_settings() -> EcomSettings {
         smart_cut: d.smart_cut,
         shopee_max_width: d.shopee_max_width,
         momo_min_last: d.momo_min_last,
+        max_quality: d.max_quality,
+        chroma444: d.chroma444,
     }
 }
 
@@ -212,6 +218,8 @@ fn to_core(job: EcomJob) -> ec::Job {
             smart_cut: job.settings.smart_cut,
             shopee_max_width: job.settings.shopee_max_width,
             momo_min_last: job.settings.momo_min_last,
+            max_quality: job.settings.max_quality.clamp(60, 100),
+            chroma444: job.settings.chroma444,
             ..ec::Settings::default()
         },
         output_root: None,

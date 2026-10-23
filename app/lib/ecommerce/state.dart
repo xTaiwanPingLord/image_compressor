@@ -63,6 +63,8 @@ class EcomState extends ChangeNotifier {
   static const _kSmart = 'ecom.smartCut';
   static const _kShopeeWidth = 'ecom.shopeeMaxWidth';
   static const _kMomoMinLast = 'ecom.momoMinLast';
+  static const _kMaxQuality = 'ecom.maxQuality';
+  static const _kChroma444 = 'ecom.chroma444';
   static const _kPlatforms = 'ecom.platforms';
   static const _kDefaultFit = 'ecom.defaultFit';
 
@@ -76,6 +78,8 @@ class EcomState extends ChangeNotifier {
       smartCut: s.getBool(_kSmart) ?? d.smartCut,
       shopeeMaxWidth: s.getInt(_kShopeeWidth) ?? d.shopeeMaxWidth,
       momoMinLast: s.getInt(_kMomoMinLast) ?? d.momoMinLast,
+      maxQuality: (s.getInt(_kMaxQuality) ?? d.maxQuality).clamp(60, 100),
+      chroma444: s.getBool(_kChroma444) ?? d.chroma444,
     );
     final pf = s.getStringList(_kPlatforms);
     if (pf != null) {
@@ -94,6 +98,8 @@ class EcomState extends ChangeNotifier {
     s.setBool(_kSmart, settings.smartCut);
     s.setInt(_kShopeeWidth, settings.shopeeMaxWidth);
     s.setInt(_kMomoMinLast, settings.momoMinLast);
+    s.setInt(_kMaxQuality, settings.maxQuality);
+    s.setBool(_kChroma444, settings.chroma444);
     s.setStringList(_kPlatforms, platforms.map((x) => x.name).toList());
     s.setString(_kDefaultFit, defaultFit.name);
   }

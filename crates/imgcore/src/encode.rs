@@ -44,6 +44,8 @@ pub struct Target {
     pub max_quality: u8,
     /// 品質到下限仍超標時，每次縮小 10% 解析度
     pub allow_downscale: bool,
+    /// 色度 4:4:4（文字 / 細線邊緣較清晰，檔案較大）
+    pub chroma444: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -92,14 +94,13 @@ pub fn compress_to_target(img: &RgbImage, t: &Target) -> Result<Encoded> {
     let mut cur = img.clone();
     let mut warnings = Vec::new();
     let mut downscaled = 0;
+    let base_mode = if t.chroma444 {
+        Mode::Chroma444
+    } else {
+        Mode::Normal
+    };
     let (q, data) = loop {
-        let (found, smallest) = search(
-            &cur,
-            t.min_quality,
-            t.max_quality,
-            t.max_bytes,
-            Mode::Normal,
-        )?;
+        let (found, smallest) = search(&cur, t.min_quality, t.max_quality, t.max_bytes, base_mode)?;
         match found {
             Some(r) => break r,
             None if t.allow_downscale && cur.width() > 16 && cur.height() > 16 => {
@@ -129,7 +130,7 @@ pub fn compress_to_target(img: &RgbImage, t: &Target) -> Result<Encoded> {
     let mut out = Encoded {
         data,
         quality: q,
-        mode: Mode::Normal,
+        mode: base_mode,
         width: cur.width(),
         height: cur.height(),
         warnings,
@@ -139,7 +140,12 @@ pub fn compress_to_target(img: &RgbImage, t: &Target) -> Result<Encoded> {
         && (out.data.len() as u64) < min
     {
         // 改 4:4:4、再關閉最佳化，品質往上找（仍需 ≤ 上限）
-        for mode in [Mode::Normal, Mode::Chroma444, Mode::Chroma444Plain] {
+        let modes: &[Mode] = if t.chroma444 {
+            &[Mode::Chroma444, Mode::Chroma444Plain]
+        } else {
+            &[Mode::Normal, Mode::Chroma444, Mode::Chroma444Plain]
+        };
+        for &mode in modes {
             let (found, _) = search(&cur, out.quality.max(t.max_quality), 100, t.max_bytes, mode)?;
             if let Some((q, d)) = found {
                 if d.len() > out.data.len() {
@@ -197,6 +203,7 @@ mod tests {
             min_quality: 10,
             max_quality: 92,
             allow_downscale: false,
+            chroma444: false,
         };
         let e = compress_to_target(&img, &t).unwrap();
         assert!(e.data.len() <= 150_000);
@@ -215,6 +222,7 @@ mod tests {
             min_quality: 60,
             max_quality: 92,
             allow_downscale: true,
+            chroma444: false,
         };
         let e = compress_to_target(&img, &t).unwrap();
         assert!(e.data.len() <= 100_000);
@@ -232,6 +240,7 @@ mod tests {
             min_quality: 10,
             max_quality: 92,
             allow_downscale: false,
+            chroma444: false,
         };
         let e = compress_to_target(&img, &t).unwrap();
         assert!(e.data.len() <= 1_000_000);
@@ -250,9 +259,45 @@ mod tests {
             min_quality: 10,
             max_quality: 92,
             allow_downscale: false,
+            chroma444: false,
         };
         let e = compress_to_target(&img, &t).unwrap();
         assert!(e.data.len() as u64 > base);
         assert!(e.warnings.is_empty());
+    }
+
+    /// 讀出 SOF 中第一個色度元件的取樣係數（1x1 = 4:4:4）。
+    fn chroma_sampling(jpeg: &[u8]) -> (u8, u8) {
+        let mut i = 2;
+        while i + 4 < jpeg.len() {
+            let marker = jpeg[i + 1];
+            let len = u16::from_be_bytes([jpeg[i + 2], jpeg[i + 3]]) as usize;
+            if (0xC0..=0xC2).contains(&marker) {
+                let luma = jpeg[i + 4 + 6 + 1];
+                let cb = jpeg[i + 4 + 6 + 3 + 1];
+                return (luma, cb);
+            }
+            i += 2 + len;
+        }
+        (0, 0)
+    }
+
+    #[test]
+    fn chroma444_option() {
+        let img = noise(300, 300, 7);
+        let mut t = Target {
+            max_bytes: 10_000_000,
+            min_bytes: None,
+            min_quality: 10,
+            max_quality: 92,
+            allow_downscale: false,
+            chroma444: false,
+        };
+        let a = compress_to_target(&img, &t).unwrap();
+        assert_eq!(chroma_sampling(&a.data), (0x22, 0x11));
+        t.chroma444 = true;
+        let b = compress_to_target(&img, &t).unwrap();
+        assert_eq!(chroma_sampling(&b.data), (0x11, 0x11));
+        assert_eq!(b.mode, Mode::Chroma444);
     }
 }

@@ -61,6 +61,8 @@ class _SettingsDialogState extends State<_SettingsDialog> {
     text: '${widget.state.settings.momoMinLast}',
   );
   late bool _smart = widget.state.settings.smartCut;
+  late double _maxQ = widget.state.settings.maxQuality.toDouble();
+  late bool _c444 = widget.state.settings.chroma444;
   late Fit _fit = widget.state.defaultFit;
 
   @override
@@ -105,6 +107,8 @@ class _SettingsDialogState extends State<_SettingsDialog> {
       _shopeeWidth.text = '${d.shopeeMaxWidth}';
       _momoMinLast.text = '${d.momoMinLast}';
       _smart = d.smartCut;
+      _maxQ = d.maxQuality.toDouble();
+      _c444 = d.chroma444;
       _fit = Fit.pad;
     });
   }
@@ -118,6 +122,8 @@ class _SettingsDialogState extends State<_SettingsDialog> {
         smartCut: _smart,
         shopeeMaxWidth: int.parse(_shopeeWidth.text),
         momoMinLast: int.parse(_momoMinLast.text),
+        maxQuality: _maxQ.round(),
+        chroma444: _c444,
       ),
       _fit,
     );
@@ -163,6 +169,47 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                   '低於此高度時從前一段挪高度；0 = 保持實際高度',
                   (n) => n >= 1500 ? '需小於 1500' : null,
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    '品質',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                Text(
+                  '每張圖各自搜尋「符合大小限制的最高品質」，不超過下方上限',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Row(
+                  children: [
+                    const SizedBox(width: 72, child: Text('品質上限')),
+                    Expanded(
+                      child: Slider(
+                        value: _maxQ,
+                        min: 60,
+                        max: 100,
+                        divisions: 40,
+                        label: '${_maxQ.round()}',
+                        onChanged: (v) => setState(() => _maxQ = v),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 32,
+                      child: Text(
+                        '${_maxQ.round()}',
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('色度 4:4:4'),
+                  subtitle: const Text('文字與細線邊緣較清晰（尤其紅字），檔案較大'),
+                  value: _c444,
+                  onChanged: (v) => setState(() => _c444 = v),
+                ),
+                const Divider(),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('智慧切點'),

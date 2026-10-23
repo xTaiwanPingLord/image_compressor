@@ -675,12 +675,16 @@ impl SseDecode for crate::api::ecommerce::EcomSettings {
         let mut var_smartCut = <bool>::sse_decode(deserializer);
         let mut var_shopeeMaxWidth = <u32>::sse_decode(deserializer);
         let mut var_momoMinLast = <u32>::sse_decode(deserializer);
+        let mut var_maxQuality = <u8>::sse_decode(deserializer);
+        let mut var_chroma444 = <bool>::sse_decode(deserializer);
         return crate::api::ecommerce::EcomSettings {
             shopee_max_desc: var_shopeeMaxDesc,
             momo_max_desc: var_momoMaxDesc,
             smart_cut: var_smartCut,
             shopee_max_width: var_shopeeMaxWidth,
             momo_min_last: var_momoMinLast,
+            max_quality: var_maxQuality,
+            chroma444: var_chroma444,
         };
     }
 }
@@ -1301,6 +1305,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::ecommerce::EcomSettings {
             self.smart_cut.into_into_dart().into_dart(),
             self.shopee_max_width.into_into_dart().into_dart(),
             self.momo_min_last.into_into_dart().into_dart(),
+            self.max_quality.into_into_dart().into_dart(),
+            self.chroma444.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1767,6 +1773,8 @@ impl SseEncode for crate::api::ecommerce::EcomSettings {
         <bool>::sse_encode(self.smart_cut, serializer);
         <u32>::sse_encode(self.shopee_max_width, serializer);
         <u32>::sse_encode(self.momo_min_last, serializer);
+        <u8>::sse_encode(self.max_quality, serializer);
+        <bool>::sse_encode(self.chroma444, serializer);
     }
 }
 

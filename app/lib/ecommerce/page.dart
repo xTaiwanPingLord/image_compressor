@@ -206,7 +206,8 @@ class _EcommercePageState extends State<EcommercePage> {
       text =
           '共 ${s.totalCount} 張 · 詳情圖上限 Shopee ${st.shopeeMaxDesc} / momo ${st.momoMaxDesc}'
           ' · 智慧切點${st.smartCut ? '開' : '關'}'
-          ' · Shopee 最大寬 ${st.shopeeMaxWidth == 0 ? '不限' : st.shopeeMaxWidth}';
+          ' · Shopee 最大寬 ${st.shopeeMaxWidth == 0 ? '不限' : st.shopeeMaxWidth}'
+          ' · 品質上限 ${st.maxQuality}${st.chroma444 ? ' · 4:4:4' : ''}';
     }
     return Material(
       color: theme.colorScheme.surfaceContainer,

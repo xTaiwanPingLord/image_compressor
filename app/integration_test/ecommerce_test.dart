@@ -121,6 +121,8 @@ void main() {
         smartCut: true,
         shopeeMaxWidth: 2000,
         momoMinLast: 300,
+        maxQuality: 92,
+        chroma444: false,
       ),
       Fit.pad,
     );
@@ -153,6 +155,8 @@ void main() {
         smartCut: true,
         shopeeMaxWidth: 2000,
         momoMinLast: 300,
+        maxQuality: 92,
+        chroma444: false,
       ),
       Fit.pad,
     );
