@@ -622,15 +622,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fontSample => 'Image Compressor 圖片壓縮 0123';
 
   @override
-  String get fontMiSansScNote =>
-      'MiSans TC has Traditional Chinese glyphs only; Simplified characters fall back to the system font';
-
-  @override
   String get setAbout => 'About';
 
   @override
   String get aboutFontCredit =>
-      'Bundled font: MiSans TC (Xiaomi MiSans, free for commercial use)';
+      'Bundled fonts: MiSans, MiSans TC (Xiaomi MiSans, free for commercial use)';
 
   @override
   String get colonSep => ': ';

@@ -405,8 +405,7 @@
   "setFont": "字體",
   "fontDefault": "預設（系統字體）",
   "fontSample": "圖片壓縮 Image Compressor 0123",
-  "fontMiSansScNote": "MiSans TC 只含繁體字形，簡體字會改用系統字體顯示",
   "setAbout": "關於",
-  "aboutFontCredit": "內建字體：MiSans TC（小米 MiSans 字體，免費商用授權）",
+  "aboutFontCredit": "內建字體：MiSans、MiSans TC（小米 MiSans 字體，免費商用授權）",
   "colonSep": "："
 }

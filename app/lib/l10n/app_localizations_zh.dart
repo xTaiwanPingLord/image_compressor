@@ -579,13 +579,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fontSample => '圖片壓縮 Image Compressor 0123';
 
   @override
-  String get fontMiSansScNote => 'MiSans TC 只含繁體字形，簡體字會改用系統字體顯示';
-
-  @override
   String get setAbout => '關於';
 
   @override
-  String get aboutFontCredit => '內建字體：MiSans TC（小米 MiSans 字體，免費商用授權）';
+  String get aboutFontCredit => '內建字體：MiSans、MiSans TC（小米 MiSans 字體，免費商用授權）';
 
   @override
   String get colonSep => '：';
@@ -1165,13 +1162,10 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
   String get fontSample => '图片压缩 Image Compressor 0123';
 
   @override
-  String get fontMiSansScNote => 'MiSans TC 只含繁体字形，简体字会改用系统字体显示';
-
-  @override
   String get setAbout => '关于';
 
   @override
-  String get aboutFontCredit => '内置字体：MiSans TC（小米 MiSans 字体，免费商用授权）';
+  String get aboutFontCredit => '内置字体：MiSans、MiSans TC（小米 MiSans 字体，免费商用授权）';
 
   @override
   String get colonSep => '：';

@@ -36,7 +36,7 @@ Future<SharedPreferences> start(
 }
 
 ThemeData currentTheme(WidgetTester tester) =>
-    Theme.of(tester.element(find.text('MiSans TC')));
+    Theme.of(tester.element(find.text('MiSans')));
 
 void main() {
   setUpAll(() async {
@@ -85,7 +85,7 @@ void main() {
     expect(currentTheme(tester).colorScheme.primary, isNot(before));
     expect(prefs.getInt('app.seed'), isNot(0));
 
-    await tester.tap(find.text('MiSans TC'));
+    await tester.tap(find.text('MiSans'));
     await tester.pumpAndSettle();
     expect(currentTheme(tester).textTheme.bodyMedium?.fontFamily, miSansFamily);
     expect(prefs.getString('app.font'), 'miSans');

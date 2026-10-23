@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'app_settings.dart';
 
-/// 內建 MiSans TC 的字體家族名稱（pubspec.yaml fonts）
+/// 內建字體家族名稱（pubspec.yaml fonts）
 const miSansFamily = 'MiSans TC';
+const miSansScFamily = 'MiSans';
+
+/// MiSans 依語言選主字體：簡體用 MiSans（簡體字形），其他用 MiSans TC；互為備援。
+String miSansPrimary(AppLanguage lang) => lang == AppLanguage.zhCN ? miSansScFamily : miSansFamily;
+String miSansSecondary(AppLanguage lang) => lang == AppLanguage.zhCN ? miSansFamily : miSansScFamily;
 
 /// 依語言挑選系統中文字體，避免繁簡字形混用。
 List<String> _systemFallback(AppLanguage lang) => switch (lang) {
@@ -32,20 +37,23 @@ ThemeData buildTheme({
       dynamicScheme ??
       ColorScheme.fromSeed(seedColor: settings.seed, brightness: brightness);
   final miSans = settings.font == AppFont.miSans;
-  final fallback = _systemFallback(settings.language);
+  final family = miSans ? miSansPrimary(settings.language) : null;
+  final fallback = [
+    if (miSans) miSansSecondary(settings.language),
+    ..._systemFallback(settings.language),
+  ];
   final base = ThemeData(
     colorScheme: scheme,
     useMaterial3: true,
-    fontFamily: miSans ? miSansFamily : null,
+    fontFamily: family,
   );
   return base.copyWith(
-    // MiSans TC 只有繁體字形；缺字（例如簡體）時改用系統字體
     textTheme: base.textTheme.apply(
-      fontFamily: miSans ? miSansFamily : null,
+      fontFamily: family,
       fontFamilyFallback: fallback,
     ),
     primaryTextTheme: base.primaryTextTheme.apply(
-      fontFamily: miSans ? miSansFamily : null,
+      fontFamily: family,
       fontFamilyFallback: fallback,
     ),
     // Slider 的數值泡泡用 OverlayPortal，Windows 無障礙橋接有崩潰風險（flutter/flutter#182444）

@@ -1132,12 +1132,6 @@ abstract class AppLocalizations {
   /// **'圖片壓縮 Image Compressor 0123'**
   String get fontSample;
 
-  /// No description provided for @fontMiSansScNote.
-  ///
-  /// In zh, this message translates to:
-  /// **'MiSans TC 只含繁體字形，簡體字會改用系統字體顯示'**
-  String get fontMiSansScNote;
-
   /// No description provided for @setAbout.
   ///
   /// In zh, this message translates to:
@@ -1147,7 +1141,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutFontCredit.
   ///
   /// In zh, this message translates to:
-  /// **'內建字體：MiSans TC（小米 MiSans 字體，免費商用授權）'**
+  /// **'內建字體：MiSans、MiSans TC（小米 MiSans 字體，免費商用授權）'**
   String get aboutFontCredit;
 
   /// No description provided for @colonSep.

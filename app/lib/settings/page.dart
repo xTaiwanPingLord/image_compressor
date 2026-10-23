@@ -123,12 +123,10 @@ class SettingsPage extends StatelessWidget {
                       ),
                       _FontOption(
                         value: AppFont.miSans,
-                        title: 'MiSans TC',
+                        title: 'MiSans',
                         sample: l.fontSample,
-                        family: miSansFamily,
-                        note: settings.language == AppLanguage.zhCN
-                            ? l.fontMiSansScNote
-                            : null,
+                        family: miSansPrimary(settings.language),
+                        fallback: [miSansSecondary(settings.language)],
                       ),
                     ],
                   ),
@@ -231,13 +229,15 @@ class _FontOption extends StatelessWidget {
     required this.title,
     required this.sample,
     required this.family,
-    this.note,
+    this.fallback,
   });
   final AppFont value;
   final String title;
   final String sample;
   final String? family;
-  final String? note;
+
+  /// 預覽時的備用字體（MiSans 繁簡互補）；null = 沿用主題設定
+  final List<String>? fallback;
 
   @override
   Widget build(BuildContext context) {
@@ -259,10 +259,9 @@ class _FontOption extends StatelessWidget {
             style: theme.textTheme.titleMedium?.copyWith(
               fontFamily: family ?? systemFamily,
               fontFamilyFallback:
-                  theme.textTheme.titleMedium?.fontFamilyFallback,
+                  fallback ?? theme.textTheme.titleMedium?.fontFamilyFallback,
             ),
           ),
-          if (note != null) Text(note!, style: theme.textTheme.bodySmall),
         ],
       ),
     );

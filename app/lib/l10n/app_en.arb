@@ -171,8 +171,7 @@
   "setFont": "Font",
   "fontDefault": "Default (system font)",
   "fontSample": "Image Compressor 圖片壓縮 0123",
-  "fontMiSansScNote": "MiSans TC has Traditional Chinese glyphs only; Simplified characters fall back to the system font",
   "setAbout": "About",
-  "aboutFontCredit": "Bundled font: MiSans TC (Xiaomi MiSans, free for commercial use)",
+  "aboutFontCredit": "Bundled fonts: MiSans, MiSans TC (Xiaomi MiSans, free for commercial use)",
   "colonSep": ": "
 }

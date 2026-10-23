@@ -65,8 +65,18 @@ flutter:
   generate: true
   uses-material-design: true
 
-  # MiSans TC（小米 MiSans 字體，免費商用授權；需在軟體中註明，見設定頁「關於」）
+  # MiSans / MiSans TC（小米 MiSans 字體，免費商用授權；需在軟體中註明，見設定頁「關於」）
   fonts:
+    - family: MiSans
+      fonts:
+        - asset: assets/fonts/MiSans-Regular.otf
+          weight: 400
+        - asset: assets/fonts/MiSans-Medium.otf
+          weight: 500
+        - asset: assets/fonts/MiSans-Semibold.otf
+          weight: 600
+        - asset: assets/fonts/MiSans-Bold.otf
+          weight: 700
     - family: MiSans TC
       fonts:
         - asset: assets/fonts/MiSansTC-Regular.otf

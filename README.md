@@ -15,10 +15,11 @@
 
 ### 多語系、主題與字體
 
-- 設定頁：語言（繁體中文 / 简体中文 / English）、主題（自動 / 淺色 / 深色）、色彩（10 色或跟隨系統：Android 12+ 桌布色、Windows / macOS 強調色）、字體（系統預設 / 內建 MiSans TC）
+- 設定頁：語言（繁體中文 / 简体中文 / English）、主題（自動 / 淺色 / 深色）、色彩（10 色或跟隨系統：Android 12+ 桌布色、Windows / macOS 強調色）、字體（系統預設 / 內建 MiSans，依語言以 MiSans TC 或 MiSans 為主、另一套補字）
 - 介面文字在 `app/lib/l10n/app_zh.arb`（繁中，範本）、`app_zh_CN.arb`、`app_en.arb`；修改後執行 `flutter gen-l10n`
 - Rust 端的警告與錯誤以代碼傳到 UI 再翻譯（`imgcore::warn::Warn`、`ErrorInfo`）
-- MiSans TC（小米 MiSans 字體，免費商用，需在軟體中註明）：`app/assets/fonts/`，Regular / Medium / Semibold / Bold
+- MiSans TC 與 MiSans（小米 MiSans 字體，免費商用，需在軟體中註明）：`app/assets/fonts/`，各 Regular / Medium / Semibold / Bold，合計約 39 MB
+- Windows 已停用無障礙（UIA / MSAA）橋接：Flutter 引擎的 AccessibilityBridge 有空指標崩潰（flutter/flutter#182444），runner 攔截 `WM_GETOBJECT` 避免啟用，代價是螢幕閱讀器無法讀取本程式
 
 修改 `app/rust/src/api` 後需重新產生 binding：`cd app && flutter_rust_bridge_codegen generate`（需先 `cargo install flutter_rust_bridge_codegen --version 2.13.0`）。
 
