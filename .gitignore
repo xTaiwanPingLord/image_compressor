@@ -5,3 +5,5 @@ check_build.*
 env_check*.txt
 build_windows.log
 _ic_src_*.tgz
+collect_crash.*
+crash_info.txt

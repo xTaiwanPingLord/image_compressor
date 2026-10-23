@@ -38,6 +38,10 @@ ThemeData appTheme(Brightness b) {
   );
   return base.copyWith(
     textTheme: base.textTheme.apply(fontFamilyFallback: _fontFallback),
+    // Slider 的數值泡泡用 OverlayPortal，Windows 無障礙橋接有崩潰風險（flutter/flutter#182444）
+    sliderTheme: base.sliderTheme.copyWith(
+      showValueIndicator: ShowValueIndicator.never,
+    ),
   );
 }
 
@@ -112,10 +116,12 @@ class _HomeShellState extends State<HomeShell> {
             NavigationDestination(
               icon: Icon(Icons.photo_size_select_large_outlined),
               label: '普通',
+              tooltip: '',
             ),
             NavigationDestination(
               icon: Icon(Icons.storefront_outlined),
               label: '電商',
+              tooltip: '',
             ),
           ],
         ),

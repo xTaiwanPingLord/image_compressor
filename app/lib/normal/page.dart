@@ -8,6 +8,7 @@ import '../ecommerce/section.dart' show imageTypeGroup;
 import '../widgets/thumb.dart';
 import 'settings_panel.dart';
 import 'state.dart';
+import '../widgets/hint.dart';
 
 /// 普通模式頁面：左側清單＋下方預覽，右側設定。
 class NormalPage extends StatefulWidget {
@@ -141,15 +142,19 @@ class _NormalPageState extends State<NormalPage> {
             child: Text('壓縮選取（${s.selected.length}）'),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            tooltip: '加入圖片',
-            onPressed: off ? null : _addFiles,
-            icon: const Icon(Icons.add_photo_alternate_outlined),
+          Hint(
+            message: '加入圖片',
+            child: IconButton(
+              onPressed: off ? null : _addFiles,
+              icon: const Icon(Icons.add_photo_alternate_outlined),
+            ),
           ),
-          IconButton(
-            tooltip: '加入資料夾（含子資料夾）',
-            onPressed: off ? null : _addFolder,
-            icon: const Icon(Icons.create_new_folder_outlined),
+          Hint(
+            message: '加入資料夾（含子資料夾）',
+            child: IconButton(
+              onPressed: off ? null : _addFolder,
+              icon: const Icon(Icons.create_new_folder_outlined),
+            ),
           ),
           const SizedBox(width: 8),
           OutlinedButton.icon(
@@ -163,10 +168,12 @@ class _NormalPageState extends State<NormalPage> {
             label: Text('移除選取（${s.selected.length}）'),
           ),
           if (!wide)
-            IconButton(
-              tooltip: '設定',
-              onPressed: _openSettingsSheet,
-              icon: const Icon(Icons.tune),
+            Hint(
+              message: '設定',
+              child: IconButton(
+                onPressed: _openSettingsSheet,
+                icon: const Icon(Icons.tune),
+              ),
             ),
         ],
       ),
@@ -386,7 +393,7 @@ class _FileTable extends StatelessWidget {
                       children: [
                         cell(
                           0,
-                          Tooltip(
+                          Hint(
                             message: it.output ?? it.path,
                             waitDuration: const Duration(milliseconds: 600),
                             child: Text(
@@ -436,7 +443,7 @@ class _FileTable extends StatelessWidget {
                         ),
                         cell(
                           5,
-                          Tooltip(
+                          Hint(
                             message: [
                               it.error ?? it.loadError,
                               ...it.warnings,

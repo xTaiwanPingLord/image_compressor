@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../src/rust/api/ecommerce.dart';
 import '../widgets/thumb.dart';
 import 'state.dart';
+import '../widgets/hint.dart';
 
 const imageTypeGroup = XTypeGroup(
   label: '圖片',
@@ -146,22 +147,28 @@ class _EcomSectionState extends State<EcomSection> {
                 ),
               ),
               const Spacer(),
-              IconButton(
-                tooltip: '加入圖片',
-                onPressed: s.running ? null : _pickFiles,
-                icon: const Icon(Icons.add_photo_alternate_outlined),
+              Hint(
+                message: '加入圖片',
+                child: IconButton(
+                  onPressed: s.running ? null : _pickFiles,
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                ),
               ),
-              IconButton(
-                tooltip: '加入資料夾',
-                onPressed: s.running ? null : _pickFolder,
-                icon: const Icon(Icons.create_new_folder_outlined),
+              Hint(
+                message: '加入資料夾',
+                child: IconButton(
+                  onPressed: s.running ? null : _pickFolder,
+                  icon: const Icon(Icons.create_new_folder_outlined),
+                ),
               ),
-              IconButton(
-                tooltip: '清空此區',
-                onPressed: s.running || items.isEmpty
-                    ? null
-                    : () => s.clear(widget.category),
-                icon: const Icon(Icons.delete_sweep_outlined),
+              Hint(
+                message: '清空此區',
+                child: IconButton(
+                  onPressed: s.running || items.isEmpty
+                      ? null
+                      : () => s.clear(widget.category),
+                  icon: const Icon(Icons.delete_sweep_outlined),
+                ),
               ),
             ],
           ),
@@ -242,20 +249,22 @@ class _ItemTileState extends State<_ItemTile> {
               Positioned(
                 right: 0,
                 top: 0,
-                child: IconButton(
-                  visualDensity: VisualDensity.compact,
-                  tooltip: '移除',
-                  style: IconButton.styleFrom(
-                    backgroundColor: scheme.surface.withValues(alpha: 0.85),
+                child: Hint(
+                  message: '移除',
+                  child: IconButton(
+                    visualDensity: VisualDensity.compact,
+                    style: IconButton.styleFrom(
+                      backgroundColor: scheme.surface.withValues(alpha: 0.85),
+                    ),
+                    onPressed: s.running ? null : () => s.remove(it),
+                    icon: const Icon(Icons.close, size: 16),
                   ),
-                  onPressed: s.running ? null : () => s.remove(it),
-                  icon: const Icon(Icons.close, size: 16),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Tooltip(
+          Hint(
             message: it.path,
             child: Text(
               it.name,

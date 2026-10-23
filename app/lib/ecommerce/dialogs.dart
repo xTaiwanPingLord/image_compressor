@@ -189,7 +189,6 @@ class _SettingsDialogState extends State<_SettingsDialog> {
                         min: 60,
                         max: 100,
                         divisions: 40,
-                        label: '${_maxQ.round()}',
                         onChanged: (v) => setState(() => _maxQ = v),
                       ),
                     ),

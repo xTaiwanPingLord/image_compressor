@@ -117,7 +117,6 @@ class _CommitSliderState extends State<_CommitSlider> {
             min: widget.min.toDouble(),
             max: widget.max.toDouble(),
             divisions: widget.max - widget.min,
-            label: v.round().toString(),
             onChanged: widget.enabled ? (x) => setState(() => _drag = x) : null,
             onChangeEnd: widget.enabled
                 ? (x) {
@@ -229,6 +228,7 @@ Widget _dropdown<T>(
   child: DropdownButtonFormField<T>(
     initialValue: value,
     isDense: true,
+    isExpanded: true,
     decoration: InputDecoration(
       labelText: label,
       border: const OutlineInputBorder(),
@@ -236,7 +236,10 @@ Widget _dropdown<T>(
     ),
     items: [
       for (final e in items.entries)
-        DropdownMenuItem(value: e.key, child: Text(e.value)),
+        DropdownMenuItem(
+          value: e.key,
+          child: Text(e.value, overflow: TextOverflow.ellipsis),
+        ),
     ],
     onChanged: onChanged == null
         ? null

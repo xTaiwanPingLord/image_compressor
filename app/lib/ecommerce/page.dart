@@ -4,6 +4,7 @@ import '../src/rust/api/ecommerce.dart';
 import 'dialogs.dart';
 import 'section.dart';
 import 'state.dart';
+import '../widgets/hint.dart';
 
 /// 電商模式頁面。
 class EcommercePage extends StatefulWidget {
@@ -121,7 +122,7 @@ class _EcommercePageState extends State<EcommercePage> {
               selected: s.platforms.contains(pf),
               onSelected: s.running ? null : (v) => s.togglePlatform(pf, v),
             ),
-          Tooltip(
+          Hint(
             message: block ?? '',
             child: FilledButton.icon(
               onPressed: block == null ? _run : null,
@@ -129,15 +130,19 @@ class _EcommercePageState extends State<EcommercePage> {
               label: const Text('執行'),
             ),
           ),
-          IconButton(
-            tooltip: '設定',
-            onPressed: s.running ? null : () => showEcomSettings(context, s),
-            icon: const Icon(Icons.tune),
+          Hint(
+            message: '設定',
+            child: IconButton(
+              onPressed: s.running ? null : () => showEcomSettings(context, s),
+              icon: const Icon(Icons.tune),
+            ),
           ),
-          IconButton(
-            tooltip: '全部清空',
-            onPressed: s.running || s.totalCount == 0 ? null : s.clearAll,
-            icon: const Icon(Icons.clear_all),
+          Hint(
+            message: '全部清空',
+            child: IconButton(
+              onPressed: s.running || s.totalCount == 0 ? null : s.clearAll,
+              icon: const Icon(Icons.clear_all),
+            ),
           ),
         ],
       ),
