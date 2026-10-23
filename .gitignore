@@ -1,2 +1,6 @@
 target/
 test_images/
+check_env.*
+check_build.*
+env_check*.txt
+build_windows.log

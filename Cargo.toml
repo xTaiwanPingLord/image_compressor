@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/imgcore", "crates/cli"]
+members = ["crates/imgcore", "crates/cli", "app/rust"]
 
 [profile.release]
 lto = "thin"

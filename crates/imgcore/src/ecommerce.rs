@@ -388,11 +388,34 @@ pub struct Output {
     pub data: Vec<u8>,
 }
 
+/// 執行進度。
+#[derive(Clone, Debug, Serialize)]
+pub enum Progress {
+    /// 讀檔與排版（含預檢）
+    Preparing,
+    /// 壓縮中：已完成 / 總數
+    Encoding { done: usize, total: usize },
+    /// 清理舊檔與寫入
+    Writing,
+}
+
 pub fn encode_all(p: &Prepared) -> Result<Vec<Output>> {
+    encode_all_with_progress(p, &|_| {})
+}
+
+pub fn encode_all_with_progress(
+    p: &Prepared,
+    progress: &(dyn Fn(Progress) + Sync),
+) -> Result<Vec<Output>> {
+    let total = p.pieces.len();
+    let done = std::sync::atomic::AtomicUsize::new(0);
+    progress(Progress::Encoding { done: 0, total });
     p.pieces
         .par_iter()
         .map(|pc| {
             let e = encode::compress_to_target(&pc.image, &pc.target)?;
+            let n = done.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+            progress(Progress::Encoding { done: n, total });
             Ok(Output {
                 platform: pc.platform,
                 category: pc.category,
@@ -465,6 +488,17 @@ pub struct RunReport {
 
 /// 完整執行。`dry_run` 時只壓縮不寫檔。
 pub fn run(job: &Job, how: Disposal, dry_run: bool) -> Result<RunReport> {
+    run_with_progress(job, how, dry_run, &|_| {})
+}
+
+/// 同 [`run`]，並回報進度。
+pub fn run_with_progress(
+    job: &Job,
+    how: Disposal,
+    dry_run: bool,
+    progress: &(dyn Fn(Progress) + Sync),
+) -> Result<RunReport> {
+    progress(Progress::Preparing);
     let p = prepare(job)?;
     let mut rep = RunReport {
         output_root: p.output_root.clone(),
@@ -477,8 +511,9 @@ pub fn run(job: &Job, how: Disposal, dry_run: bool) -> Result<RunReport> {
     if !p.overflow.is_empty() {
         return Ok(rep);
     }
-    rep.outputs = encode_all(&p)?;
+    rep.outputs = encode_all_with_progress(&p, progress)?;
     if !dry_run {
+        progress(Progress::Writing);
         let w = write_outputs(&p.name, &p.output_root, &rep.outputs, how)?;
         rep.written = w.written;
         rep.disposed = w.disposed;

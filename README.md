@@ -1,6 +1,19 @@
 # image_compressor
 
-跨平台圖片壓縮工具。目前為第一階段：Rust 核心（`crates/imgcore`）＋ 命令列工具 `imgc`（`crates/cli`），已完成電商模式（Shopee / momo）。規格見 Claude 專案中的 `plan.md`。
+跨平台圖片壓縮工具。規格見 Claude 專案中的 `plan.md`。
+
+| 目錄 | 內容 |
+|---|---|
+| `crates/imgcore` | Rust 影像核心（電商模式：Shopee / momo） |
+| `crates/cli` | 命令列工具 `imgc` |
+| `app/` | Flutter 桌面 / 行動 App；`app/rust` 以 flutter_rust_bridge 包裝 imgcore |
+
+## 桌面 App（Windows）
+
+雙擊 `build_windows.bat`：檢查開發人員模式 → `flutter build windows --release` → 成功後自動開啟 App。
+執行檔在 `app\build\windows\x64\runner\Release\image_compressor.exe`（整個 Release 資料夾一起複製才能在別台電腦執行）。記錄寫在 `build_windows.log`。
+
+修改 `app/rust/src/api` 後需重新產生 binding：`cd app && flutter_rust_bridge_codegen generate`（需先 `cargo install flutter_rust_bridge_codegen --version 2.13.0`）。
 
 ## 建置（Windows）
 
