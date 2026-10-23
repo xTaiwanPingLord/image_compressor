@@ -21,6 +21,25 @@
 - MiSans TC 與 MiSans（小米 MiSans 字體，免費商用，需在軟體中註明）：`app/assets/fonts/`，各 Regular / Medium / Semibold / Bold，合計約 39 MB
 - Windows 已停用無障礙（UIA / MSAA）橋接：Flutter 引擎的 AccessibilityBridge 有空指標崩潰（flutter/flutter#182444），runner 攔截 `WM_GETOBJECT` 避免啟用，代價是螢幕閱讀器無法讀取本程式
 
+### HEIC / HEIF
+
+不內建 HEVC 解碼器（專利與 LGPL 授權），容器自己解析（`imgcore::heif`：尺寸、clap / irot / imir、ICC、EXIF），像素交給系統：
+
+- Windows：WIC，需安裝「HEIF 影像延伸模組」與「HEVC 視訊延伸模組」；WIC 會套用 clap 與 irot、不套用 imir，也不支援 alpha
+- Linux：執行時載入系統 libheif（`libheif1` + `libheif-plugin-libde265`）
+- Android：NDK AImageDecoder（Android 11 / API 30 以上），直接轉成 sRGB
+- macOS / iOS：尚未實作（ImageIO，第四階段）
+
+普通模式「與原檔相同」格式時 HEIC 輸出 JPEG。`imgc heif-check` 與設定頁的「HEIC」那行（點一下）可做解碼自我測試。
+
+### Android
+
+- 檔案存取在 `android/.../FilesChannel.kt`（MethodChannel `imgc/files`）＋ `lib/platform/android_files.dart`：選圖片、選資料夾（SAF，取得永久授權）、從其他 App 分享進來
+- Rust 只吃一般路徑：輸入先複製到 App 快取，輸出先寫到快取再透過 SAF 寫回資料夾；舊檔與被覆寫的原檔移到 `_old/`
+- 電商模式輸出到圖片最多的來源資料夾；圖片不是從資料夾加入時需選輸出資料夾
+- 普通模式「與原檔相同資料夾」只適用從資料夾加入的圖片；Android 無法保留檔案日期
+- NDK 版本固定為 30.0.16248370（`android/app/build.gradle.kts`）
+
 修改 `app/rust/src/api` 後需重新產生 binding：`cd app && flutter_rust_bridge_codegen generate`（需先 `cargo install flutter_rust_bridge_codegen --version 2.13.0`）。
 
 ## 建置（Windows）
