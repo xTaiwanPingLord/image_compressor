@@ -24,6 +24,8 @@ A new Flutter FFI plugin project.
   s.platform = :osx, '10.11'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
+  # imgcore 的 HEIC 解碼（ImageIO）；Rust 靜態庫不會自動帶入 framework
+  s.frameworks = 'ImageIO', 'CoreGraphics', 'CoreFoundation'
 
   s.script_phase = {
     :name => 'Build Rust library',

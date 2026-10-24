@@ -15,3 +15,7 @@ build_windows.log
 _ic_src_*.tgz
 collect_crash.*
 crash_info.txt
+build_macos.log
+.DS_Store
+build_ios.log
+setup_ios_share.log

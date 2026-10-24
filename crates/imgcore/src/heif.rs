@@ -3,7 +3,7 @@
 //! - Windows：WIC（需安裝「HEIF 影像擴充功能」與「HEVC 視訊擴充功能」）
 //! - Linux：執行時載入系統的 libheif（libheif1 + libheif-plugin-libde265）
 //! - Android：NDK AImageDecoder（Android 11 / API 30 以上）
-//! - macOS / iOS：ImageIO（尚未實作）
+//! - macOS / iOS：ImageIO
 //!
 //! HEVC 有專利授權問題，因此不內建解碼器。
 
@@ -448,6 +448,8 @@ pub(crate) enum Applied {
     All,
     /// 只套用 clap 與 irot，未套用 imir（Android，實測）
     CropRotate,
+    /// 只套用 clap（ImageIO：方向以屬性回報，不轉像素）
+    Crop,
     /// 都未套用
     None,
 }
@@ -493,6 +495,15 @@ fn finish(info: &Info, raw: Raw) -> Decoded {
     match applied {
         Applied::All => {}
         Applied::None => img = apply_transforms(img, &info.transforms),
+        Applied::Crop => {
+            let geo: Vec<Transform> = info
+                .transforms
+                .iter()
+                .copied()
+                .filter(|t| !matches!(t, Transform::Crop(..)))
+                .collect();
+            img = apply_transforms(img, &geo);
+        }
         Applied::CropRotate => {
             let mirrors: Vec<Transform> = info
                 .transforms
@@ -586,7 +597,11 @@ mod sys;
 #[path = "heif/android.rs"]
 mod sys;
 
-#[cfg(not(any(target_os = "linux", windows, target_os = "android")))]
+#[cfg(any(target_os = "macos", target_os = "ios"))]
+#[path = "heif/apple.rs"]
+mod sys;
+
+#[cfg(not(any(target_os = "linux", windows, target_os = "android", target_os = "macos", target_os = "ios")))]
 mod sys {
     use super::*;
     pub fn supported() -> bool {

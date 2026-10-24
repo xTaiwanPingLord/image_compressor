@@ -28,7 +28,7 @@
 - Windows：WIC，需安裝「HEIF 影像延伸模組」與「HEVC 視訊延伸模組」；WIC 會套用 clap、irot 與 imir，但不支援 alpha
 - Linux：執行時載入系統 libheif（`libheif1` + `libheif-plugin-libde265`）
 - Android：NDK AImageDecoder（Android 11 / API 30 以上），直接轉成 sRGB；實測套用 irot、不套用 imir（由程式補上）、不支援 alpha
-- macOS / iOS：尚未實作（ImageIO，第四階段）
+- macOS / iOS：ImageIO（`heif/apple.rs`），畫進 sRGB CGBitmapContext 轉色彩空間；實測不套用 irot / imir（由程式補上）、支援 alpha；clap 尚未以實際檔案驗證
 
 普通模式「與原檔相同」格式時 HEIC 輸出 JPEG。`imgc heif-check` 與設定頁的「HEIC」那行（點一下）可做解碼自我測試。
 
