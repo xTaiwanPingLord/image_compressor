@@ -10,6 +10,8 @@ import UniformTypeIdentifiers
 final class ShareViewController: UIViewController {
   static let appGroup = "group.tw.toast.imageCompressor"
   static let openURL = URL(string: "imgcompressor://shared")!
+  /// Darwin notification the app listens for (it may already be on screen, e.g. iPad Split View)
+  static let inboxNotification = "tw.toast.imageCompressor.inbox"
 
   private var started = false
 
@@ -52,6 +54,9 @@ final class ShareViewController: UIViewController {
     }
     group.notify(queue: .main) {
       try? fm.moveItem(at: part, to: inbox.appendingPathComponent(id, isDirectory: true))
+      CFNotificationCenterPostNotification(
+        CFNotificationCenterGetDarwinNotifyCenter(),
+        CFNotificationName(Self.inboxNotification as CFString), nil, nil, true)
       self.openHostApp()
       self.finish()
     }

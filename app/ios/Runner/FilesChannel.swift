@@ -17,6 +17,8 @@ final class FilesChannel: NSObject, UIDocumentPickerDelegate, PHPickerViewContro
   static let treePrefix = "iosbm:"
   /// 與 ShareExtension 共用的 App Group（Inbox 放分享進來的圖片）
   static let appGroup = "group.tw.toast.imageCompressor"
+  /// ShareExtension 寫完 Inbox 後發出的 Darwin 通知（App 已在畫面上時不會觸發 didBecomeActive）
+  static let inboxNotification = "tw.toast.imageCompressor.inbox"
 
   static func isImageName(_ name: String) -> Bool {
     imageExts.contains((name as NSString).pathExtension.lowercased())
@@ -46,6 +48,15 @@ final class FilesChannel: NSObject, UIDocumentPickerDelegate, PHPickerViewContro
     // Share Extension 寫入 Inbox 後會用 imgcompressor:// 開啟 App；也在每次回到前景時檢查
     NotificationCenter.default.addObserver(
       self, selector: #selector(pullInbox), name: UIApplication.didBecomeActiveNotification, object: nil)
+    // iPad 分割畫面 / Slide Over：App 一直在前景，改由 extension 的 Darwin 通知觸發
+    CFNotificationCenterAddObserver(
+      CFNotificationCenterGetDarwinNotifyCenter(),
+      Unmanaged.passUnretained(self).toOpaque(),
+      { _, observer, _, _, _ in
+        guard let observer else { return }
+        Unmanaged<FilesChannel>.fromOpaque(observer).takeUnretainedValue().pullInbox()
+      },
+      Self.inboxNotification as CFString, nil, .deliverImmediately)
     pullInbox()
   }
 
