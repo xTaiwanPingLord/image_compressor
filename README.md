@@ -42,6 +42,24 @@
 
 修改 `app/rust/src/api` 後需重新產生 binding：`cd app && flutter_rust_bridge_codegen generate`（需先 `cargo install flutter_rust_bridge_codegen --version 2.13.0`）。
 
+## 發布（GitHub Actions）
+
+`.github/workflows/build.yml`：push 到 main 只跑 Rust 測試；push 標籤 `v*` 會打包並發布 Release；也可在 Actions 頁面手動執行（只打包，檔案在 Artifacts）。
+
+```
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+| 平台 | 產出 |
+|---|---|
+| Windows | Inno Setup 安裝程式（`packaging/windows.iss`）＋免安裝 zip（附 MSVC 執行階段 DLL） |
+| macOS | dmg（universal，未簽章 / 未公證） |
+| Linux | AppImage ＋ tar.gz（ubuntu-22.04 建置） |
+| Android | 依 ABI 分開的 apk（arm64-v8a / armeabi-v7a / x86_64） |
+
+Android 正式簽章：GitHub Secrets `ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`；本機可用 `app/android/key.properties`（git 忽略）。兩者都沒有時以 debug 金鑰簽署。金鑰遺失就無法再更新已安裝的 App，務必備份。
+
 ## 建置（Windows）
 
 需要：rustup（stable，≥1.88）、Visual Studio 2022 Build Tools（Desktop C++）、NASM（mozjpeg SIMD 用，需在 PATH）。

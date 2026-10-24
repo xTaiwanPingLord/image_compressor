@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Image Compressor
+Comment=Image compressor with Shopee / momo e-commerce mode
+Exec=image_compressor
+Icon=image_compressor
+Categories=Graphics;Utility;
+Terminal=false

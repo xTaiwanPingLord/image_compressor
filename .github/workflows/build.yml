@@ -1,0 +1,218 @@
+# 測試與打包
+# - push 到 main / pull request：只跑 Rust 測試
+# - push 版本標籤 v*（例如 v1.0.0）：打包 Windows / macOS / Linux / Android 並發布 GitHub Release
+# - 手動執行（Actions → Build → Run workflow）：打包但不發布，檔案在該次執行的 Artifacts
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.47.8
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system packages
+        run: sudo apt-get update && sudo apt-get install -y nasm libheif1 libheif-plugin-libde265
+      - uses: Swatinem/rust-cache@v2
+      - name: Rust tests
+        run: cargo test -p imgcore -p imgc --release
+
+  windows:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        shell: bash
+        run: bash .github/scripts/version.sh
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: NASM and Inno Setup
+        run: |
+          choco install nasm innosetup -y --no-progress
+          "C:\Program Files\NASM" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Build
+        working-directory: app
+        shell: bash
+        run: flutter build windows --release --build-name=$VERSION --build-number=$BUILD_NUMBER
+      - name: Package
+        shell: pwsh
+        run: |
+          $rel = "app\build\windows\x64\runner\Release"
+          # Flutter 不附 MSVC 執行階段，沒裝 VC++ Redistributable 的電腦會打不開
+          foreach ($d in "msvcp140.dll", "vcruntime140.dll", "vcruntime140_1.dll") {
+            Copy-Item "$env:SystemRoot\System32\$d" $rel
+          }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path "$rel\*" -DestinationPath "dist\ImageCompressor-$env:VERSION-windows-x64.zip"
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$env:VERSION" packaging\windows.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/*
+
+  macos:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        run: bash .github/scripts/version.sh
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Toolchain
+        run: |
+          brew install nasm
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - name: Build
+        working-directory: app
+        run: flutter build macos --release --build-name=$VERSION --build-number=$BUILD_NUMBER
+      - name: Package
+        run: |
+          mkdir -p dist dmg
+          cp -R app/build/macos/Build/Products/Release/image_compressor.app "dmg/Image Compressor.app"
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname "Image Compressor" -srcfolder dmg -ov -format UDZO \
+            "dist/ImageCompressor-$VERSION-macos.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/*
+
+  linux:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    # 較舊的 glibc，AppImage 可在較多發行版執行
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        run: bash .github/scripts/version.sh
+      - name: System packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev nasm file
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Build
+        working-directory: app
+        run: flutter build linux --release --build-name=$VERSION --build-number=$BUILD_NUMBER
+      - name: Package
+        run: |
+          B=app/build/linux/x64/release/bundle
+          mkdir -p dist
+          tar czf "dist/ImageCompressor-$VERSION-linux-x86_64.tar.gz" -C "$B" .
+          # AppImage
+          A=AppDir
+          mkdir -p $A
+          cp -a "$B"/. $A/
+          cp packaging/image_compressor.desktop $A/
+          cp app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png $A/image_compressor.png
+          printf '#!/bin/sh\nHERE="$(dirname "$(readlink -f "$0")")"\nexec "$HERE/image_compressor" "$@"\n' > $A/AppRun
+          chmod +x $A/AppRun
+          curl -fsSL -o appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool $A "dist/ImageCompressor-$VERSION-linux-x86_64.AppImage"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/*
+
+  android:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        run: bash .github/scripts/version.sh
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Toolchain
+        run: |
+          sudo apt-get update && sudo apt-get install -y nasm
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;30.0.16248370" > /dev/null
+          rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+      - name: Signing key
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE" ]; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 未設定，APK 以 debug 金鑰簽署（無法覆蓋更新正式版）"
+            exit 0
+          fi
+          echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.jks"
+          {
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_PASSWORD=$STORE_PASSWORD"
+            echo "ANDROID_KEY_ALIAS=$KEY_ALIAS"
+            echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+      - name: Build
+        working-directory: app
+        run: flutter build apk --release --split-per-abi --build-name=$VERSION --build-number=$BUILD_NUMBER
+      - name: Package
+        run: |
+          mkdir -p dist
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            cp "app/build/app/outputs/flutter-apk/app-$abi-release.apk" "dist/ImageCompressor-$VERSION-android-$abi.apk"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: dist/*
+
+  release:
+    needs: [windows, macos, linux, android]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          body_path: packaging/release_notes.md
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

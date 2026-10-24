@@ -19,3 +19,6 @@ build_macos.log
 .DS_Store
 build_ios.log
 setup_ios_share.log
+_signing/
+app/android/key.properties
+dist/
