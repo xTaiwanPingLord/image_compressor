@@ -64,6 +64,8 @@ String warningText(AppLocalizations l, WarningInfo w) {
     'under_min' => l.warnUnderMin(formatBytes(a(0)), formatBytes(a(1))),
     'gif_first_frame' => l.warnGifFirstFrame,
     'jpeg_reencoded' => l.warnJpegReencoded,
+    'exif_thumbnail_removed' => l.warnExifThumbnailRemoved,
+    'exif_dropped' => l.warnExifDropped,
     'target_not_reached' => l.warnTargetNotReached(
       formatBytes(a(0)),
       formatBytes(a(1)),

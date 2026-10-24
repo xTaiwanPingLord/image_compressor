@@ -190,5 +190,7 @@
   "overwriteWarningAndroid": "同文件夹且无后缀：会覆盖原文件（原文件先移到 _old 子文件夹）",
   "ecomPlatforms": "平台",
   "pickFromGallery": "从相册选择",
-  "pickFromFiles": "从文件选择（可浏览文件夹）"
+  "pickFromFiles": "从文件选择（可浏览文件夹）",
+  "warnExifThumbnailRemoved": "EXIF 超过 JPEG 的 64 KB 上限，已移除其中的缩略图",
+  "warnExifDropped": "EXIF 超过 JPEG 的 64 KB 上限，未保留"
 }

@@ -53,6 +53,64 @@ pub fn to_app1(tiff: &[u8]) -> Vec<u8> {
     v
 }
 
+/// JPEG APP1 marker 的 payload 上限（65535 − 2 bytes 長度欄位）。
+pub const APP1_MAX: usize = 65533;
+
+/// 讓 EXIF 能放進單一 APP1：太大時先拿掉 IFD1 縮圖，仍太大回傳 None。
+/// 回傳 (APP1 payload, 是否有刪減)。
+pub fn fit_app1(tiff: &[u8]) -> (Option<Vec<u8>>, bool) {
+    let app1 = to_app1(tiff);
+    if app1.len() <= APP1_MAX {
+        return (Some(app1), false);
+    }
+    match strip_thumbnail(tiff) {
+        Some(t) if t.len() + 6 <= APP1_MAX => (Some(to_app1(&t)), true),
+        _ => (None, true),
+    }
+}
+
+/// 拿掉 IFD1（縮圖）：IFD0 的 next 指標設 0，並截掉放在最後的縮圖資料。
+fn strip_thumbnail(tiff: &[u8]) -> Option<Vec<u8>> {
+    let le = match tiff.get(..2)? {
+        b"II" => true,
+        b"MM" => false,
+        _ => return None,
+    };
+    let rd16 = |o: usize| -> Option<usize> {
+        let b = tiff.get(o..o + 2)?;
+        Some(if le { u16::from_le_bytes([b[0], b[1]]) } else { u16::from_be_bytes([b[0], b[1]]) } as usize)
+    };
+    let rd32 = |o: usize| -> Option<usize> {
+        let b = tiff.get(o..o + 4)?;
+        let a = [b[0], b[1], b[2], b[3]];
+        Some(if le { u32::from_le_bytes(a) } else { u32::from_be_bytes(a) } as usize)
+    };
+    let ifd0 = rd32(4)?;
+    let n0 = rd16(ifd0)?;
+    let next_pos = ifd0 + 2 + n0 * 12;
+    let ifd1 = rd32(next_pos)?;
+    if ifd1 == 0 {
+        return None;
+    }
+    // 縮圖起點：JPEGInterchangeFormat (0x0201)；沒有就從 IFD1 起截
+    let mut thumb = None;
+    if let Some(n1) = rd16(ifd1) {
+        for i in 0..n1 {
+            let e = ifd1 + 2 + i * 12;
+            if rd16(e) == Some(0x0201) {
+                thumb = rd32(e + 8);
+            }
+        }
+    }
+    let cut = thumb.unwrap_or(ifd1);
+    if cut < next_pos + 4 || cut > tiff.len() {
+        return None;
+    }
+    let mut out = tiff[..cut].to_vec();
+    out[next_pos..next_pos + 4].copy_from_slice(&[0, 0, 0, 0]);
+    Some(out)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,6 +148,32 @@ mod tests {
             let out = reset_orientation(&src);
             assert_eq!(out, sample(le, 1));
         }
+    }
+
+    #[test]
+    fn oversized_exif_drops_thumbnail_or_all() {
+        // IFD0 一個欄位，next 指向 IFD1（含 0x0201 縮圖偏移），縮圖 70 KB 放最後
+        let mut v = sample(true, 6);
+        let next_pos = 8 + 2 + 2 * 12;
+        let ifd1 = v.len();
+        v[next_pos..next_pos + 4].copy_from_slice(&(ifd1 as u32).to_le_bytes());
+        let thumb_off = ifd1 + 2 + 12 + 4;
+        v.extend(1u16.to_le_bytes());
+        v.extend(0x0201u16.to_le_bytes());
+        v.extend(4u16.to_le_bytes());
+        v.extend(1u32.to_le_bytes());
+        v.extend((thumb_off as u32).to_le_bytes());
+        v.extend(0u32.to_le_bytes());
+        v.resize(thumb_off + 70_000, 0xAB);
+        let (app1, cut) = fit_app1(&v);
+        let app1 = app1.unwrap();
+        assert!(cut && app1.len() <= APP1_MAX && app1.len() < 200);
+        // 沒有縮圖可拿：整段放不下就丟掉
+        let mut big = sample(true, 1);
+        big.resize(80_000, 0);
+        assert_eq!(fit_app1(&big), (None, true));
+        // 小的不動
+        assert_eq!(fit_app1(&sample(true, 1)).1, false);
     }
 
     #[test]

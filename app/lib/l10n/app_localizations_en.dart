@@ -691,4 +691,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pickFromFiles => 'Choose from files (browse folders)';
+
+  @override
+  String get warnExifThumbnailRemoved =>
+      'EXIF exceeded JPEG\'s 64 KB limit; its thumbnail was removed';
+
+  @override
+  String get warnExifDropped =>
+      'EXIF exceeded JPEG\'s 64 KB limit and wasn\'t kept';
 }

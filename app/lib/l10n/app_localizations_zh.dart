@@ -643,6 +643,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pickFromFiles => '從檔案選擇（可瀏覽資料夾）';
+
+  @override
+  String get warnExifThumbnailRemoved => 'EXIF 超過 JPEG 的 64 KB 上限，已移除其中的縮圖';
+
+  @override
+  String get warnExifDropped => 'EXIF 超過 JPEG 的 64 KB 上限，未保留';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1283,4 +1289,10 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get pickFromFiles => '从文件选择（可浏览文件夹）';
+
+  @override
+  String get warnExifThumbnailRemoved => 'EXIF 超过 JPEG 的 64 KB 上限，已移除其中的缩略图';
+
+  @override
+  String get warnExifDropped => 'EXIF 超过 JPEG 的 64 KB 上限，未保留';
 }

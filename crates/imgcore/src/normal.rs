@@ -277,7 +277,14 @@ fn encode_jpeg(
         s.write_scanlines(img.as_raw())?;
         s.finish()
     })
-    .map_err(|_| Error::Encode("mozjpeg panic".into()))?
+    .map_err(|p| {
+        let msg = p
+            .downcast_ref::<String>()
+            .cloned()
+            .or_else(|| p.downcast_ref::<&str>().map(|s| s.to_string()))
+            .unwrap_or_default();
+        Error::Encode(format!("mozjpeg panic {msg}").trim().to_string())
+    })?
     .map_err(|e| Error::Encode(e.to_string()))
 }
 
@@ -432,12 +439,20 @@ pub fn compress_bytes(data: &[u8], o: &Options) -> Result<Compressed> {
     rgba = resize_rgba(&rgba, tw, th);
 
     let icc = dec.icc.as_deref().filter(|i| !is_srgb(i));
-    let exif_app1 = if o.keep_metadata {
-        dec.exif
-            .as_deref()
-            .map(|e| exif::to_app1(&exif::reset_orientation(e)))
-    } else {
-        None
+    let exif_app1 = match (o.keep_metadata, dec.exif.as_deref()) {
+        (true, Some(e)) => {
+            // JPEG 的 APP1 上限 64 KB：太大先去縮圖，仍放不下就不保留
+            let (app1, trimmed) = exif::fit_app1(&exif::reset_orientation(e));
+            if trimmed && kind == Kind::Jpeg {
+                warnings.push(if app1.is_some() {
+                    Warn::ExifThumbnailRemoved
+                } else {
+                    Warn::ExifDropped
+                });
+            }
+            app1
+        }
+        _ => None,
     };
 
     // 單一品質下的編碼
@@ -983,3 +998,4 @@ mod tests {
         );
     }
 }
+

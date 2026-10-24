@@ -190,5 +190,7 @@
   "overwriteWarningAndroid": "Same folder with no suffix overwrites originals (they're moved to _old first)",
   "ecomPlatforms": "Platforms",
   "pickFromGallery": "Choose from gallery",
-  "pickFromFiles": "Choose from files (browse folders)"
+  "pickFromFiles": "Choose from files (browse folders)",
+  "warnExifThumbnailRemoved": "EXIF exceeded JPEG's 64 KB limit; its thumbnail was removed",
+  "warnExifDropped": "EXIF exceeded JPEG's 64 KB limit and wasn't kept"
 }

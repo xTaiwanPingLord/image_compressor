@@ -23,6 +23,10 @@ pub enum Warn {
     JpegReencoded,
     /// 目標大小模式：品質降到 1 仍超過目標
     TargetNotReached { bytes: u64, target: u64 },
+    /// EXIF 超過 JPEG 上限（64 KB），已移除其中的縮圖
+    ExifThumbnailRemoved,
+    /// EXIF 超過 JPEG 上限（64 KB），未保留
+    ExifDropped,
 }
 
 impl Warn {
@@ -34,6 +38,8 @@ impl Warn {
             Warn::GifFirstFrame => "gif_first_frame",
             Warn::JpegReencoded => "jpeg_reencoded",
             Warn::TargetNotReached { .. } => "target_not_reached",
+            Warn::ExifThumbnailRemoved => "exif_thumbnail_removed",
+            Warn::ExifDropped => "exif_dropped",
         }
     }
 
@@ -54,7 +60,10 @@ impl Warn {
                 vec![quality as i64, times as i64, width as i64, height as i64]
             }
             Warn::UnderMin { bytes, min } => vec![bytes as i64, min as i64],
-            Warn::GifFirstFrame | Warn::JpegReencoded => vec![],
+            Warn::GifFirstFrame
+            | Warn::JpegReencoded
+            | Warn::ExifThumbnailRemoved
+            | Warn::ExifDropped => vec![],
             Warn::TargetNotReached { bytes, target } => vec![bytes as i64, target as i64],
         }
     }
@@ -94,6 +103,8 @@ impl fmt::Display for Warn {
             Warn::TargetNotReached { bytes, target } => {
                 write!(f, "品質降到 1 仍有 {bytes} bytes，超過目標 {target}")
             }
+            Warn::ExifThumbnailRemoved => write!(f, "EXIF 超過 JPEG 的 64 KB 上限，已移除其中的縮圖"),
+            Warn::ExifDropped => write!(f, "EXIF 超過 JPEG 的 64 KB 上限，未保留"),
         }
     }
 }

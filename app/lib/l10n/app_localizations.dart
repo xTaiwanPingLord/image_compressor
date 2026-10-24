@@ -1251,6 +1251,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'從檔案選擇（可瀏覽資料夾）'**
   String get pickFromFiles;
+
+  /// No description provided for @warnExifThumbnailRemoved.
+  ///
+  /// In zh, this message translates to:
+  /// **'EXIF 超過 JPEG 的 64 KB 上限，已移除其中的縮圖'**
+  String get warnExifThumbnailRemoved;
+
+  /// No description provided for @warnExifDropped.
+  ///
+  /// In zh, this message translates to:
+  /// **'EXIF 超過 JPEG 的 64 KB 上限，未保留'**
+  String get warnExifDropped;
 }
 
 class _AppLocalizationsDelegate
