@@ -82,7 +82,7 @@ fn full_run_meets_platform_specs() {
         ]
     );
 
-    // momo：主/選項 1000x1000、51,200–1,000,000；詳情寬 1000、1800+800 → 1500+1100
+    // momo：主/選項 1000x1000、38,912–1,000,000；詳情寬 1000、≤ 500,000、1800+800 → 1500+1100
     for f in [
         "223_ssd_main_01.jpg",
         "223_ssd_main_02.jpg",
@@ -91,12 +91,13 @@ fn full_run_meets_platform_specs() {
         let p = momo.join(f);
         assert_eq!(dims(&p), (1000, 1000), "{f}");
         let n = std::fs::metadata(&p).unwrap().len();
-        assert!((51_200..=1_000_000).contains(&n), "{f} {n}");
+        assert!((38_912..=1_000_000).contains(&n), "{f} {n}");
     }
     assert_eq!(dims(&momo.join("223_ssd_desc_01.jpg")), (1000, 1500));
     assert_eq!(dims(&momo.join("223_ssd_desc_02.jpg")), (1000, 1100));
     for f in list(&momo) {
-        assert!(std::fs::metadata(momo.join(&f)).unwrap().len() <= 1_000_000);
+        let max = if f.contains("_desc_") { 500_000 } else { 1_000_000 };
+        assert!(std::fs::metadata(momo.join(&f)).unwrap().len() <= max, "{f}");
     }
 
     // Shopee：主圖 1 裁成 1:1（900x900）、主圖 2 維持 3:4；選項 1:1 補白；詳情比例都 OK 各自保留

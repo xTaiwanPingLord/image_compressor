@@ -47,8 +47,11 @@ impl Category {
 }
 
 pub const SHOPEE_MAX_BYTES: u64 = 2_000_000;
-pub const MOMO_MAIN_MIN_BYTES: u64 = 51_200;
+/// momo 主圖 / 選項圖：38 KB（以 1024 計，取較嚴格者）– 1,000,000 bytes
+pub const MOMO_MAIN_MIN_BYTES: u64 = 38 * 1024;
 pub const MOMO_MAX_BYTES: u64 = 1_000_000;
+/// momo 詳情圖：< 500 KB（以 1000 計，取較嚴格者）
+pub const MOMO_DESC_MAX_BYTES: u64 = 500_000;
 pub const MOMO_MAIN_SIZE: u32 = 1000;
 pub const SHOPEE_DESC_LIMIT: usize = 12;
 pub const MOMO_DESC_LIMIT: usize = 20;
@@ -291,7 +294,7 @@ pub fn prepare(job: &Job) -> Result<Prepared> {
                     chroma444: s.chroma444,
                 },
                 Target {
-                    max_bytes: MOMO_MAX_BYTES,
+                    max_bytes: MOMO_DESC_MAX_BYTES,
                     min_bytes: None,
                     min_quality: s.momo_min_quality,
                     max_quality: s.max_quality,
