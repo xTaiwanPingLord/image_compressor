@@ -57,7 +57,12 @@ String errorText(AppLocalizations l, AppError? e) {
 
 /// 把 Rust 端的結構化警告翻成目前語言。
 String warningText(AppLocalizations l, WarningInfo w) {
-  int a(int i) => i < w.args.length ? (w.args[i] as num).toInt() : 0;
+  // FRB 的 i64 在不同平台可能是 int 或 BigInt
+  int a(int i) {
+    if (i >= w.args.length) return 0;
+    final Object v = w.args[i];
+    return v is BigInt ? v.toInt() : (v as num).toInt();
+  }
   return switch (w.code) {
     'over_max' => l.warnOverMax(a(0), formatBytes(a(1)), formatBytes(a(2))),
     'downscaled' => l.warnDownscaled(a(0), a(1), a(2), a(3)),
