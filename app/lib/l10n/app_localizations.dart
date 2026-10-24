@@ -1233,6 +1233,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'同資料夾且無後綴：會覆寫原檔（原檔先移到 _old 子資料夾）'**
   String get overwriteWarningAndroid;
+
+  /// No description provided for @ecomPlatforms.
+  ///
+  /// In zh, this message translates to:
+  /// **'平台'**
+  String get ecomPlatforms;
+
+  /// No description provided for @pickFromGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'從相簿選擇'**
+  String get pickFromGallery;
+
+  /// No description provided for @pickFromFiles.
+  ///
+  /// In zh, this message translates to:
+  /// **'從檔案選擇（可瀏覽資料夾）'**
+  String get pickFromFiles;
 }
 
 class _AppLocalizationsDelegate

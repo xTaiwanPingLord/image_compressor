@@ -187,5 +187,8 @@
   "outputTo": "Output to: {name}",
   "sharedToWhich": "Add {count} images to which section?",
   "overwriteBodyAndroid": "The output folder is the same as the originals and there's no suffix. Originals will be moved to an _old subfolder before the compressed files are written. Continue?",
-  "overwriteWarningAndroid": "Same folder with no suffix overwrites originals (they're moved to _old first)"
+  "overwriteWarningAndroid": "Same folder with no suffix overwrites originals (they're moved to _old first)",
+  "ecomPlatforms": "Platforms",
+  "pickFromGallery": "Choose from gallery",
+  "pickFromFiles": "Choose from files (browse folders)"
 }

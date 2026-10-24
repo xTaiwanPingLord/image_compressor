@@ -6,6 +6,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_compressor/ecommerce/dialogs.dart';
+import 'package:image_compressor/ecommerce/page.dart';
 import 'package:image_compressor/ecommerce/state.dart';
 import 'package:image_compressor/main.dart';
 import 'package:image_compressor/normal/state.dart';
@@ -41,7 +43,9 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final normal = NormalState(prefs: prefs);
     final ecom = EcomState(prefs: prefs);
-    await tester.binding.setSurfaceSize(const Size(412, 915));
+    tester.view.physicalSize = const Size(412, 915);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(
       RepaintBoundary(
         key: _key,
@@ -73,6 +77,41 @@ void main() {
     await tester.tap(find.text('電商'));
     await tester.pumpAndSettle();
     await _shot(tester, 'phone_ecom');
+    // 電商設定：窄螢幕為底部彈出
+    await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    await _shot(tester, 'phone_ecom_settings');
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+    // 結果對話框：長檔名要省略
+    final ctx = tester.element(find.byType(EcommercePage));
+    showResult(
+      ctx,
+      EcomReport(
+        outputRoot: '/tmp/out',
+        descCounts: const [],
+        overflow: const [],
+        outputs: [
+          for (final c in [ImgCategory.main, ImgCategory.desc])
+            OutputInfo(
+              platform: ShopPlatform.shopee,
+              category: c,
+              fileName: '2B47831694A7EC6D761FCFC14DA8C_${c.name}_01.jpg',
+              width: 2000,
+              height: 2667,
+              bytes: BigInt.from(232000),
+              quality: 92,
+              warnings: const [],
+            ),
+        ],
+        writtenCount: 2,
+        disposedCount: 0,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _shot(tester, 'phone_ecom_result');
+    Navigator.of(ctx).pop();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('設定').last);
     await tester.pumpAndSettle();
     await _shot(tester, 'phone_settings');

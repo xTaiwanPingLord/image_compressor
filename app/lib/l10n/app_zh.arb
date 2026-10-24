@@ -435,5 +435,8 @@
     }
   },
   "overwriteBodyAndroid": "輸出位置與原檔相同且沒有後綴，原檔會先移到同資料夾的 _old 子資料夾，再寫入壓縮後的檔案。要繼續嗎？",
-  "overwriteWarningAndroid": "同資料夾且無後綴：會覆寫原檔（原檔先移到 _old 子資料夾）"
+  "overwriteWarningAndroid": "同資料夾且無後綴：會覆寫原檔（原檔先移到 _old 子資料夾）",
+  "ecomPlatforms": "平台",
+  "pickFromGallery": "從相簿選擇",
+  "pickFromFiles": "從檔案選擇（可瀏覽資料夾）"
 }

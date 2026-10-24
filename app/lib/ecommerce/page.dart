@@ -151,12 +151,6 @@ class _EcommercePageState extends State<EcommercePage> {
               onChanged: s.setName,
             ),
           ),
-          for (final pf in ShopPlatform.values)
-            FilterChip(
-              label: Text(platformLabel(pf)),
-              selected: s.platforms.contains(pf),
-              onSelected: s.running ? null : (v) => s.togglePlatform(pf, v),
-            ),
           if (AndroidFiles.supported) _androidOutput(context),
           Hint(
             message: block == null ? '' : _blockText(l, block),
@@ -252,16 +246,20 @@ class _EcommercePageState extends State<EcommercePage> {
       text = _blockText(l, s.blockReason!);
     } else {
       final st = s.settings;
+      final pfs = ShopPlatform.values
+          .where(s.platforms.contains)
+          .map(platformLabel)
+          .join(' + ');
+      final status = l.ecomStatus(
+        s.totalCount,
+        st.shopeeMaxDesc,
+        st.momoMaxDesc,
+        st.smartCut ? l.on : l.off,
+        st.shopeeMaxWidth == 0 ? l.unlimited : '${st.shopeeMaxWidth}',
+        st.maxQuality,
+      );
       text =
-          l.ecomStatus(
-            s.totalCount,
-            st.shopeeMaxDesc,
-            st.momoMaxDesc,
-            st.smartCut ? l.on : l.off,
-            st.shopeeMaxWidth == 0 ? l.unlimited : '${st.shopeeMaxWidth}',
-            st.maxQuality,
-          ) +
-          (st.chroma444 ? ' · 4:4:4' : '');
+          '${pfs.isEmpty ? '—' : pfs} · $status${st.chroma444 ? ' · 4:4:4' : ''}';
     }
     return Material(
       color: theme.colorScheme.surfaceContainer,

@@ -27,6 +27,18 @@ Future<void> openFolder(String path) async {
 // ---------------- 設定 ----------------
 
 Future<void> showEcomSettings(BuildContext context, EcomState s) {
+  // 窄螢幕與普通模式一致：底部彈出；寬螢幕用對話框
+  if (MediaQuery.sizeOf(context).width < 720) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.85,
+        child: _SettingsDialog(state: s, sheet: true),
+      ),
+    );
+  }
   return showDialog(
     context: context,
     builder: (_) => _SettingsDialog(state: s),
@@ -34,8 +46,9 @@ Future<void> showEcomSettings(BuildContext context, EcomState s) {
 }
 
 class _SettingsDialog extends StatefulWidget {
-  const _SettingsDialog({required this.state});
+  const _SettingsDialog({required this.state, this.sheet = false});
   final EcomState state;
+  final bool sheet;
 
   @override
   State<_SettingsDialog> createState() => _SettingsDialogState();
@@ -59,6 +72,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
   late double _maxQ = widget.state.settings.maxQuality.toDouble();
   late bool _c444 = widget.state.settings.chroma444;
   late Fit _fit = widget.state.defaultFit;
+  late final Set<ShopPlatform> _platforms = {...widget.state.platforms};
 
   @override
   void dispose() {
@@ -81,6 +95,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
         decoration: InputDecoration(
           labelText: label,
           helperText: help,
+          helperMaxLines: 3,
           border: const OutlineInputBorder(),
         ),
         keyboardType: TextInputType.number,
@@ -105,6 +120,9 @@ class _SettingsDialogState extends State<_SettingsDialog> {
       _maxQ = d.maxQuality.toDouble();
       _c444 = d.chroma444;
       _fit = Fit.pad;
+      _platforms
+        ..clear()
+        ..addAll(ShopPlatform.values);
     });
   }
 
@@ -122,6 +140,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
       ),
       _fit,
     );
+    widget.state.setPlatforms(_platforms);
     Navigator.pop(context);
   }
 
@@ -130,120 +149,159 @@ class _SettingsDialogState extends State<_SettingsDialog> {
     final shopeeLimit = descLimit(platform: ShopPlatform.shopee);
     final momoLimit = descLimit(platform: ShopPlatform.momo);
     final l = context.l;
-    return AlertDialog(
-      title: Text(l.ecomSettingsTitle),
-      content: SizedBox(
-        width: 420,
-        child: Form(
-          key: _form,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                _num(
-                  _shopeeMax,
-                  l.ecomShopeeMaxDesc,
-                  l.rangeHelp(1, shopeeLimit),
-                  (n) => n < 1 || n > shopeeLimit
-                      ? l.rangeError(1, shopeeLimit)
-                      : null,
-                ),
-                _num(
-                  _momoMax,
-                  l.ecomMomoMaxDesc,
-                  l.ecomMomoMaxDescHelp(1, momoLimit),
-                  (n) => n < 1 || n > momoLimit
-                      ? l.rangeError(1, momoLimit)
-                      : null,
-                ),
-                _num(
-                  _shopeeWidth,
-                  l.ecomShopeeMaxWidth,
-                  l.ecomShopeeMaxWidthHelp,
-                  (n) => n != 0 && n < 750 ? l.ecomShopeeMaxWidthError : null,
-                ),
-                _num(
-                  _momoMinLast,
-                  l.ecomMomoMinLast,
-                  l.ecomMomoMinLastHelp,
-                  (n) => n >= 1500 ? l.ecomMomoMinLastError : null,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    l.ecomQuality,
-                    style: Theme.of(context).textTheme.titleSmall,
+    final form = Form(
+      key: _form,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l.ecomPlatforms, style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final pf in ShopPlatform.values)
+                FilterChip(
+                  label: Text(platformLabel(pf)),
+                  selected: _platforms.contains(pf),
+                  onSelected: (v) => setState(
+                    () => v ? _platforms.add(pf) : _platforms.remove(pf),
                   ),
                 ),
-                Text(
-                  l.ecomQualityHelp,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Row(
-                  children: [
-                    SizedBox(width: 96, child: Text(l.ecomMaxQuality)),
-                    Expanded(
-                      child: Slider(
-                        value: _maxQ,
-                        min: 60,
-                        max: 100,
-                        divisions: 40,
-                        onChanged: (v) => setState(() => _maxQ = v),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 32,
-                      child: Text(
-                        '${_maxQ.round()}',
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                  ],
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l.ecomChroma444),
-                  subtitle: Text(l.ecomChroma444Help),
-                  value: _c444,
-                  onChanged: (v) => setState(() => _c444 = v),
-                ),
-                const Divider(),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l.ecomSmartCut),
-                  subtitle: Text(l.ecomSmartCutHelp),
-                  value: _smart,
-                  onChanged: (v) => setState(() => _smart = v),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: Text(l.ecomDefaultFit)),
-                    SegmentedButton<Fit>(
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment(value: Fit.pad, label: Text(l.pad)),
-                        ButtonSegment(value: Fit.crop, label: Text(l.crop)),
-                      ],
-                      selected: {_fit},
-                      onSelectionChanged: (v) => setState(() => _fit = v.first),
-                    ),
-                  ],
-                ),
-              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          _num(
+            _shopeeMax,
+            l.ecomShopeeMaxDesc,
+            l.rangeHelp(1, shopeeLimit),
+            (n) =>
+                n < 1 || n > shopeeLimit ? l.rangeError(1, shopeeLimit) : null,
+          ),
+          _num(
+            _momoMax,
+            l.ecomMomoMaxDesc,
+            l.ecomMomoMaxDescHelp(1, momoLimit),
+            (n) => n < 1 || n > momoLimit ? l.rangeError(1, momoLimit) : null,
+          ),
+          _num(
+            _shopeeWidth,
+            l.ecomShopeeMaxWidth,
+            l.ecomShopeeMaxWidthHelp,
+            (n) => n != 0 && n < 750 ? l.ecomShopeeMaxWidthError : null,
+          ),
+          _num(
+            _momoMinLast,
+            l.ecomMomoMinLast,
+            l.ecomMomoMinLastHelp,
+            (n) => n >= 1500 ? l.ecomMomoMinLastError : null,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              l.ecomQuality,
+              style: Theme.of(context).textTheme.titleSmall,
             ),
           ),
-        ),
+          Text(l.ecomQualityHelp, style: Theme.of(context).textTheme.bodySmall),
+          Row(
+            children: [
+              SizedBox(width: 96, child: Text(l.ecomMaxQuality)),
+              Expanded(
+                child: Slider(
+                  value: _maxQ,
+                  min: 60,
+                  max: 100,
+                  divisions: 40,
+                  onChanged: (v) => setState(() => _maxQ = v),
+                ),
+              ),
+              SizedBox(
+                width: 32,
+                child: Text('${_maxQ.round()}', textAlign: TextAlign.right),
+              ),
+            ],
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l.ecomChroma444),
+            subtitle: Text(l.ecomChroma444Help),
+            value: _c444,
+            onChanged: (v) => setState(() => _c444 = v),
+          ),
+          const Divider(),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l.ecomSmartCut),
+            subtitle: Text(l.ecomSmartCutHelp),
+            value: _smart,
+            onChanged: (v) => setState(() => _smart = v),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: Text(l.ecomDefaultFit)),
+              SegmentedButton<Fit>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(value: Fit.pad, label: Text(l.pad)),
+                  ButtonSegment(value: Fit.crop, label: Text(l.crop)),
+                ],
+                selected: {_fit},
+                onSelectionChanged: (v) => setState(() => _fit = v.first),
+              ),
+            ],
+          ),
+        ],
       ),
-      actions: [
-        TextButton(onPressed: _resetDefaults, child: Text(l.resetDefaults)),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l.cancel),
+    );
+    final actions = [
+      TextButton(onPressed: _resetDefaults, child: Text(l.resetDefaults)),
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Text(l.cancel),
+      ),
+      FilledButton(onPressed: _save, child: Text(l.save)),
+    ];
+    if (widget.sheet) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
-        FilledButton(onPressed: _save, child: Text(l.save)),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                l.ecomSettingsTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                child: form,
+              ),
+            ),
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                children: actions,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return AlertDialog(
+      title: Text(l.ecomSettingsTitle),
+      content: SizedBox(width: 420, child: SingleChildScrollView(child: form)),
+      actions: actions,
     );
   }
 }
@@ -386,56 +444,82 @@ class _OutputRow extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final small = theme.textTheme.bodySmall;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    final cat = categoryLabel(context.l, o.category);
+    final dims = '${o.width}×${o.height}';
+    final size = formatBytes(o.bytes.toInt());
+    final warnings = [
+      for (final w in o.warnings)
+        Text(
+          '⚠ ${warningText(context.l, w)}',
+          style: small?.copyWith(color: scheme.error),
+        ),
+    ];
+    return LayoutBuilder(
+      builder: (context, c) {
+        // 窄螢幕：檔名一行（過長以 … 省略），下一行放類別與數值
+        if (c.maxWidth < 480) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  o.fileName,
+                  style: theme.textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '$cat · $dims · $size · q${o.quality}',
+                  style: small,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                ...warnings,
+              ],
+            ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: 56,
-                child: Text(categoryLabel(context.l, o.category), style: small),
+              Row(
+                children: [
+                  SizedBox(width: 56, child: Text(cat, style: small)),
+                  Expanded(
+                    child: Text(
+                      o.fileName,
+                      style: theme.textTheme.bodyMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 100,
+                    child: Text(dims, style: small, textAlign: TextAlign.right),
+                  ),
+                  SizedBox(
+                    width: 80,
+                    child: Text(size, style: small, textAlign: TextAlign.right),
+                  ),
+                  SizedBox(
+                    width: 44,
+                    child: Text(
+                      'q${o.quality}',
+                      style: small,
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
               ),
-              Expanded(
-                child: Text(o.fileName, style: theme.textTheme.bodyMedium),
-              ),
-              SizedBox(
-                width: 100,
-                child: Text(
-                  '${o.width}×${o.height}',
-                  style: small,
-                  textAlign: TextAlign.right,
-                ),
-              ),
-              SizedBox(
-                width: 80,
-                child: Text(
-                  formatBytes(o.bytes.toInt()),
-                  style: small,
-                  textAlign: TextAlign.right,
-                ),
-              ),
-              SizedBox(
-                width: 44,
-                child: Text(
-                  'q${o.quality}',
-                  style: small,
-                  textAlign: TextAlign.right,
-                ),
-              ),
+              for (final w in warnings)
+                Padding(padding: const EdgeInsets.only(left: 56), child: w),
             ],
           ),
-          for (final w in o.warnings)
-            Padding(
-              padding: const EdgeInsets.only(left: 56),
-              child: Text(
-                '⚠ ${warningText(context.l, w)}',
-                style: small?.copyWith(color: scheme.error),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

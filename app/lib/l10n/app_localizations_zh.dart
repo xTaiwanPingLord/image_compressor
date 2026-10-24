@@ -634,6 +634,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get overwriteWarningAndroid => '同資料夾且無後綴：會覆寫原檔（原檔先移到 _old 子資料夾）';
+
+  @override
+  String get ecomPlatforms => '平台';
+
+  @override
+  String get pickFromGallery => '從相簿選擇';
+
+  @override
+  String get pickFromFiles => '從檔案選擇（可瀏覽資料夾）';
 }
 
 /// The translations for Chinese, as used in China (`zh_CN`).
@@ -1265,4 +1274,13 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get overwriteWarningAndroid => '同文件夹且无后缀：会覆盖原文件（原文件先移到 _old 子文件夹）';
+
+  @override
+  String get ecomPlatforms => '平台';
+
+  @override
+  String get pickFromGallery => '从相册选择';
+
+  @override
+  String get pickFromFiles => '从文件选择（可浏览文件夹）';
 }

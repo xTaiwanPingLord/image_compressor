@@ -162,6 +162,14 @@ class EcomState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setPlatforms(Set<ShopPlatform> v) {
+    platforms
+      ..clear()
+      ..addAll(v);
+    _savePrefs();
+    notifyListeners();
+  }
+
   void togglePlatform(ShopPlatform pf, bool on) {
     on ? platforms.add(pf) : platforms.remove(pf);
     _savePrefs();

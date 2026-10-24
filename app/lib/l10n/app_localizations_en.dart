@@ -682,4 +682,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get overwriteWarningAndroid =>
       'Same folder with no suffix overwrites originals (they\'re moved to _old first)';
+
+  @override
+  String get ecomPlatforms => 'Platforms';
+
+  @override
+  String get pickFromGallery => 'Choose from gallery';
+
+  @override
+  String get pickFromFiles => 'Choose from files (browse folders)';
 }

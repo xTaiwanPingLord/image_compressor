@@ -8,6 +8,7 @@ import '../ecommerce/section.dart' show imageTypeGroup;
 import '../l10n/l10n.dart';
 import '../src/rust/api/common.dart' show ErrorKind;
 import '../platform/android_files.dart';
+import '../platform/android_pick.dart';
 import '../widgets/thumb.dart';
 import 'settings_panel.dart';
 import 'state.dart';
@@ -29,7 +30,7 @@ class _NormalPageState extends State<NormalPage> {
 
   Future<void> _addFiles() async {
     if (AndroidFiles.supported) {
-      await s.addImported(await AndroidFiles.instance.pickImages());
+      await s.addImported(await pickAndroidImages(context));
       return;
     }
     final f = await openFiles(acceptedTypeGroups: [imageTypeGroup(context.l)]);
@@ -177,15 +178,19 @@ class _NormalPageState extends State<NormalPage> {
             ),
           ),
           const SizedBox(width: 8),
-          OutlinedButton.icon(
-            onPressed: off || s.items.isEmpty ? null : s.clear,
-            icon: const Icon(Icons.clear_all),
-            label: Text(context.l.clearAll),
+          Hint(
+            message: context.l.clearAll,
+            child: IconButton(
+              onPressed: off || s.items.isEmpty ? null : s.clear,
+              icon: const Icon(Icons.clear_all),
+            ),
           ),
-          OutlinedButton.icon(
-            onPressed: off || s.selected.isEmpty ? null : s.removeSelected,
-            icon: const Icon(Icons.remove_circle_outline),
-            label: Text(context.l.removeSelected(s.selected.length)),
+          Hint(
+            message: context.l.removeSelected(s.selected.length),
+            child: IconButton(
+              onPressed: off || s.selected.isEmpty ? null : s.removeSelected,
+              icon: const Icon(Icons.remove_circle_outline),
+            ),
           ),
           if (!wide)
             Hint(

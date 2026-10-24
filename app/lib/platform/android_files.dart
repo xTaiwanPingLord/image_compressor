@@ -94,8 +94,11 @@ class AndroidFiles {
     return d.path;
   }
 
-  Future<List<ImportedFile>> pickImages() async {
-    final list = await _ch.invokeListMethod<Map>('pickImages');
+  /// gallery = 系統相片挑選器；否則為檔案挑選器（可瀏覽資料夾）。
+  Future<List<ImportedFile>> pickImages({bool gallery = false}) async {
+    final list = await _ch.invokeListMethod<Map>('pickImages', {
+      'gallery': gallery,
+    });
     return [
       for (final m in list ?? const []) ImportedFile(m['path'] as String),
     ];

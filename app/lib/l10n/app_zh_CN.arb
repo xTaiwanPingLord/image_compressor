@@ -187,5 +187,8 @@
   "outputTo": "输出到：{name}",
   "sharedToWhich": "把 {count} 张图片添加到哪个区？",
   "overwriteBodyAndroid": "输出位置与原文件相同且没有后缀，原文件会先移到同文件夹的 _old 子文件夹，再写入压缩后的文件。要继续吗？",
-  "overwriteWarningAndroid": "同文件夹且无后缀：会覆盖原文件（原文件先移到 _old 子文件夹）"
+  "overwriteWarningAndroid": "同文件夹且无后缀：会覆盖原文件（原文件先移到 _old 子文件夹）",
+  "ecomPlatforms": "平台",
+  "pickFromGallery": "从相册选择",
+  "pickFromFiles": "从文件选择（可浏览文件夹）"
 }

@@ -7,6 +7,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.ext.SdkExtensions
+import android.provider.MediaStore
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.Document
 import android.provider.OpenableColumns
@@ -69,11 +71,15 @@ class FilesChannel(private val activity: Activity, messenger: BinaryMessenger) :
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "cacheDir" -> result.success(root.absolutePath)
-            "pickImages" -> startPick(result, REQ_IMAGES, Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "image/*"
-                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-            })
+            "pickImages" -> startPick(
+                result,
+                REQ_IMAGES,
+                if (call.argument<Boolean>("gallery") == true) galleryIntent() else Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "image/*"
+                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                }
+            )
             "pickFolder" -> startPick(result, REQ_TREE, Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
                 addFlags(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
@@ -121,6 +127,23 @@ class FilesChannel(private val activity: Activity, messenger: BinaryMessenger) :
                 pendingShared = null
             }
             else -> result.notImplemented()
+        }
+    }
+
+    /** System photo picker (Android 13+, or 11+ with the SDK extension); otherwise a gallery app. */
+    private fun galleryIntent(): Intent {
+        val hasPicker = Build.VERSION.SDK_INT >= 33 ||
+            (Build.VERSION.SDK_INT >= 30 && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2)
+        if (hasPicker) {
+            return Intent(MediaStore.ACTION_PICK_IMAGES).apply {
+                type = "image/*"
+                putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, MediaStore.getPickImagesMaxLimit())
+            }
+        }
+        return Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "image/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         }
     }
 

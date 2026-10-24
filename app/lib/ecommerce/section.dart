@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
 import '../platform/android_files.dart';
+import '../platform/android_pick.dart';
 import '../src/rust/api/common.dart';
 import '../src/rust/api/ecommerce.dart';
 import '../widgets/thumb.dart';
@@ -55,7 +56,7 @@ class _EcomSectionState extends State<EcomSection> {
 
   Future<void> _pickFiles() async {
     if (AndroidFiles.supported) {
-      final f = await AndroidFiles.instance.pickImages();
+      final f = await pickAndroidImages(context);
       await s.addImported(widget.category, f);
       return;
     }
