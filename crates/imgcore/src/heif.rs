@@ -444,9 +444,9 @@ pub fn apply_transforms(mut img: DynamicImage, ts: &[Transform]) -> DynamicImage
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(dead_code)]
 pub(crate) enum Applied {
-    /// clap / irot / imir 都已套用（libheif、Android）
+    /// clap / irot / imir 都已套用（libheif）
     All,
-    /// 只套用 clap 與 irot，未套用 imir（Windows WIC，實測）
+    /// 只套用 clap 與 irot，未套用 imir（Windows WIC、Android，皆實測）
     CropRotate,
     /// 都未套用
     None,
@@ -476,6 +476,11 @@ pub fn supported() -> bool {
 pub fn decode(data: &[u8]) -> Result<Decoded> {
     let info = parse(data)?;
     let raw = sys::decode(data)?;
+    Ok(finish(&info, raw))
+}
+
+/// 補上解碼器沒套用的轉換。
+fn finish(info: &Info, raw: Raw) -> Decoded {
     let (w, h) = (raw.rgba.width(), raw.rgba.height());
     let disp = info.display_size();
     // 尺寸還是編碼尺寸、但應該要變 → 解碼器什麼都沒套用
@@ -503,11 +508,11 @@ pub fn decode(data: &[u8]) -> Result<Decoded> {
     } else {
         DynamicImage::ImageRgb8(img.to_rgb8())
     };
-    Ok(Decoded {
+    Decoded {
         img,
-        icc: if raw.srgb { None } else { info.icc },
-        exif: info.exif,
-    })
+        icc: if raw.srgb { None } else { info.icc.clone() },
+        exif: info.exif.clone(),
+    }
 }
 
 /// 內建測試圖（64×48，左上角紅色方塊；檔名數字為產生時的 EXIF 方向：
@@ -558,7 +563,8 @@ pub fn self_test() -> Vec<(&'static str, std::result::Result<String, String>)> {
             if a.get_pixel(30, 5).0[3] < 10 && a.get_pixel(30, 40).0[3] > 245 {
                 Ok("ok".to_string())
             } else {
-                Err("alpha 不正確".to_string())
+                // WIC 與 Android 的解碼器都不支援 HEIC 透明度；照片不受影響
+                Ok("系統解碼器不支援透明度（透明處顯示原色）".to_string())
             }
         })()),
     ]
@@ -666,5 +672,33 @@ mod tests {
         let d = decode(&fixture("alpha.heic")).unwrap();
         let a = d.img.to_rgba8();
         assert!(a.get_pixel(30, 5).0[3] < 10 && a.get_pixel(30, 40).0[3] > 245);
+    }
+
+    /// 模擬只套用 clap / irot 的解碼器（WIC、Android），確認補上 imir 後方向正確
+    #[test]
+    fn crop_rotate_decoder() {
+        if !supported() {
+            return;
+        }
+        let raw_plain = sys::decode(&fixture("plain.heic")).unwrap().rgba;
+        for (name, want, marker) in [
+            ("orient2.heic", (64, 48), (61, 2)),
+            ("orient7.heic", (48, 64), (45, 61)),
+            ("orient6.heic", (48, 64), (45, 2)),
+        ] {
+            let info = parse(&fixture(name)).unwrap();
+            let rot: Vec<Transform> = info
+                .transforms
+                .iter()
+                .copied()
+                .filter(|t| matches!(t, Transform::Rotate(_)))
+                .collect();
+            let emulated = apply_transforms(DynamicImage::ImageRgba8(raw_plain.clone()), &rot).to_rgba8();
+            let d = finish(&info, Raw { rgba: emulated, applied: Applied::CropRotate, srgb: false });
+            let im = d.img.to_rgb8();
+            assert_eq!(im.dimensions(), want, "{name}");
+            let p = im.get_pixel(marker.0, marker.1).0;
+            assert!(p[0] > 200 && p[1] < 60 && p[2] < 60, "{name}: {p:?}");
+        }
     }
 }

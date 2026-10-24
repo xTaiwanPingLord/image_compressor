@@ -102,7 +102,8 @@ pub fn decode(data: &[u8]) -> Result<Raw> {
         }
         Ok(Raw {
             rgba: RgbaImage::from_raw(w as u32, ht as u32, buf).expect("size"),
-            applied: Applied::All,
+            // 實機測試：會套用 irot，但不套用 imir（同 WIC）
+            applied: Applied::CropRotate,
             srgb: true,
         })
     }
