@@ -10,6 +10,10 @@ import 'state.dart';
 
 /// 用系統檔案管理員開啟資料夾。
 Future<void> openFolder(String path) async {
+  if (path == galleryOutput) {
+    await AndroidFiles.instance.openGallery();
+    return;
+  }
   final tree = decodeTreeDir(path);
   if (tree != null) {
     await AndroidFiles.instance.openTree(tree.$1, tree.$2);
@@ -371,7 +375,9 @@ class _ResultDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              treeDirLabel(report.outputRoot),
+              report.outputRoot == galleryOutput
+                  ? l.ecomGalleryAlbums
+                  : treeDirLabel(report.outputRoot),
               style: theme.textTheme.bodySmall,
             ),
             if (report.disposedCount > 0)

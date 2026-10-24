@@ -546,6 +546,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customFolder => 'Choose a folder';
 
   @override
+  String get openGallery => 'Open Photos';
+
+  @override
+  String get ecomGalleryAlbums => 'Shopee and momo albums';
+
+  @override
+  String get saveToGallery => 'Save to Photos';
+
+  @override
+  String saveToGalleryHelp(String album) {
+    return 'Saved to the “$album” album';
+  }
+
+  @override
+  String get errGalleryDenied =>
+      'No access to Photos: allow it for this app in system Settings';
+
+  @override
   String get change => 'Change…';
 
   @override

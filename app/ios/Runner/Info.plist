@@ -24,8 +24,25 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>tw.toast.imageCompressor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>imgcompressor</string>
+			</array>
+		</dict>
+	</array>
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>將壓縮後的圖片存入相簿（Save compressed images to Photos）</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>將壓縮後的圖片存入「Image Compressor」相簿（Save compressed images to an album）</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

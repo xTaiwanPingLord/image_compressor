@@ -506,6 +506,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customFolder => '指定資料夾';
 
   @override
+  String get openGallery => '開啟相簿';
+
+  @override
+  String get ecomGalleryAlbums => 'Shopee、momo 相簿';
+
+  @override
+  String get saveToGallery => '寫入相簿';
+
+  @override
+  String saveToGalleryHelp(String album) {
+    return '存到「$album」相簿';
+  }
+
+  @override
+  String get errGalleryDenied => '沒有相簿權限：請到系統設定允許本 App 存取照片';
+
+  @override
   String get change => '變更…';
 
   @override
@@ -1150,6 +1167,23 @@ class AppLocalizationsZhCn extends AppLocalizationsZh {
 
   @override
   String get customFolder => '指定文件夹';
+
+  @override
+  String get openGallery => '打开相册';
+
+  @override
+  String get ecomGalleryAlbums => 'Shopee、momo 相册';
+
+  @override
+  String get saveToGallery => '写入相册';
+
+  @override
+  String saveToGalleryHelp(String album) {
+    return '存到“$album”相册';
+  }
+
+  @override
+  String get errGalleryDenied => '没有相册权限：请在系统设置中允许本应用访问照片';
 
   @override
   String get change => '更改…';

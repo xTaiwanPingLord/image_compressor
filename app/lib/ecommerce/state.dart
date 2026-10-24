@@ -89,9 +89,21 @@ class EcomState extends ChangeNotifier {
   static const _kPlatforms = 'ecom.platforms';
   static const _kDefaultFit = 'ecom.defaultFit';
   static const _kAndroidOut = 'ecom.androidOut';
+  static const _kAndroidGallery = 'ecom.androidGallery';
 
   /// Android：使用者指定的輸出資料夾（圖片不是從資料夾加入時使用）
   TreeRef? androidOut;
+
+  /// 行動裝置：使用者選擇寫入相簿（圖片不是從資料夾加入時使用）
+  bool androidGallery = false;
+
+  /// 有圖片是從資料夾加入（輸出固定到該資料夾）
+  bool get hasFolderSource =>
+      sections.values.expand((l) => l).any((i) => i.source != null);
+
+  /// 輸出到相簿（Shopee、momo 兩個相簿）
+  bool get outputToGallery =>
+      AndroidFiles.supported && androidGallery && !hasFolderSource;
 
   /// Android：實際輸出的資料夾 = 圖片最多的來源資料夾，否則為指定的輸出資料夾。
   TreeRef? get androidTarget {
@@ -100,18 +112,26 @@ class EcomState extends ChangeNotifier {
       final t = it.source?.tree;
       if (t != null) count[t] = (count[t] ?? 0) + 1;
     }
-    if (count.isEmpty) return androidOut;
+    if (count.isEmpty) return androidGallery ? null : androidOut;
     return count.entries.reduce((a, b) => b.value > a.value ? b : a).key;
   }
 
   void setAndroidOut(TreeRef? t) {
     androidOut = t;
+    androidGallery = false;
     final s = _prefs;
     if (s != null) {
       t == null
           ? s.remove(_kAndroidOut)
           : s.setString(_kAndroidOut, jsonEncode(t.toJson()));
+      s.setBool(_kAndroidGallery, false);
     }
+    notifyListeners();
+  }
+
+  void setAndroidGallery() {
+    androidGallery = true;
+    _prefs?.setBool(_kAndroidGallery, true);
     notifyListeners();
   }
 
@@ -139,6 +159,7 @@ class EcomState extends ChangeNotifier {
       final raw = s.getString(_kAndroidOut);
       if (raw != null) androidOut = TreeRef.fromJson(jsonDecode(raw));
     } catch (_) {}
+    androidGallery = s.getBool(_kAndroidGallery) ?? false;
   }
 
   void _savePrefs() {
@@ -315,7 +336,7 @@ class EcomState extends ChangeNotifier {
     if (totalCount == 0) return EcomBlock.noImages;
     if (!allLoaded) return EcomBlock.loading;
     if (hasErrors) return EcomBlock.unreadable;
-    if (AndroidFiles.supported && androidTarget == null) {
+    if (AndroidFiles.supported && androidTarget == null && !outputToGallery) {
       return EcomBlock.noOutputFolder;
     }
     return null;
@@ -344,6 +365,7 @@ class EcomState extends ChangeNotifier {
     try {
       final android = AndroidFiles.supported;
       final target = androidTarget;
+      final gallery = outputToGallery;
       var job = buildJob();
       String? staging;
       if (android) {
@@ -369,12 +391,14 @@ class EcomState extends ChangeNotifier {
           last?.stage == EcomStage.done &&
           r != null &&
           r.overflow.isEmpty &&
-          target != null) {
+          (gallery || target != null)) {
         last = EcomProgress(
           stage: EcomStage.done,
           done: last!.done,
           total: last.total,
-          report: await _exportAndroid(job.name, r, staging!, target),
+          report: gallery
+              ? await _exportGallery(r, staging!)
+              : await _exportAndroid(job.name, r, staging!, target!),
         );
         progress = last;
       }
@@ -385,7 +409,9 @@ class EcomState extends ChangeNotifier {
         total: 0,
         error: AppError(
           kind: e is PlatformException ? ErrorKind.io : ErrorKind.other,
-          detail: e is PlatformException ? (e.message ?? e.code) : e.toString(),
+          detail: e is PlatformException
+              ? (e.code == 'denied' ? galleryDeniedCode : (e.message ?? e.code))
+              : e.toString(),
         ),
       );
     } finally {
@@ -438,6 +464,36 @@ class EcomState extends ChangeNotifier {
       disposedCount: disposed,
     );
   }
+
+  /// 行動裝置：把暫存輸出依平台存到 Shopee / momo 相簿（依主圖、選項圖、詳情圖順序）。
+  /// 相簿無法像資料夾那樣把舊檔移到 _old/，重新執行會再加一份。
+  Future<EcomReport> _exportGallery(EcomReport r, String staging) async {
+    final af = AndroidFiles.instance;
+    final pfs = r.outputs.map((o) => o.platform).toSet().toList()
+      ..sort((a, b) => a.index.compareTo(b.index));
+    for (final pf in pfs) {
+      for (final o in r.outputs.where((o) => o.platform == pf)) {
+        await af.saveToGallery(
+          p.join(staging, pf.name, o.fileName),
+          album: galleryAlbumOf(pf),
+        );
+      }
+    }
+    return EcomReport(
+      outputRoot: galleryOutput,
+      descCounts: r.descCounts,
+      overflow: r.overflow,
+      outputs: r.outputs,
+      writtenCount: r.writtenCount,
+      disposedCount: 0,
+    );
+  }
+
+  /// 電商輸出的相簿名稱
+  static String galleryAlbumOf(ShopPlatform pf) => switch (pf) {
+    ShopPlatform.shopee => 'Shopee',
+    ShopPlatform.momo => 'momo',
+  };
 
   static String _catPrefix(ImgCategory c) => switch (c) {
     ImgCategory.main => 'main',

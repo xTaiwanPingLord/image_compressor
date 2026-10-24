@@ -1,4 +1,7 @@
-// Android 的檔案存取（MethodChannel "imgc/files"，實作在 FilesChannel.kt）。
+// Android / iOS 的檔案存取（MethodChannel "imgc/files"；Android 實作在 FilesChannel.kt，
+// iOS 在 ios/Runner/FilesChannel.swift，協定相同）。
+//
+// tree：Android 為 SAF tree uri（content://…），iOS 為 security-scoped bookmark（iosbm:…）。
 //
 // Rust 只吃一般路徑，所以選取 / 分享進來的圖片會先複製到 App 快取資料夾；
 // 輸出先寫到快取，再透過 SAF 寫回使用者選的資料夾。
@@ -60,7 +63,8 @@ class AndroidFiles {
   }
   static final instance = AndroidFiles._();
 
-  static bool get supported => Platform.isAndroid;
+  /// 行動平台：沒有一般檔案路徑可直接寫回，走 channel。
+  static bool get supported => Platform.isAndroid || Platform.isIOS;
 
   static const _ch = MethodChannel('imgc/files');
   final _shared = StreamController<List<ImportedFile>>.broadcast();
@@ -167,10 +171,32 @@ class AndroidFiles {
     'backup': backup,
   });
 
+  bool? _gallery;
+
+  /// 能否寫入相簿（Android 10 以上；iOS 皆可）。
+  Future<bool> galleryAvailable() async =>
+      _gallery ??= await _ch.invokeMethod<bool>('galleryAvailable') ?? false;
+
+  /// 把本機檔案存到相簿 album（Android：Pictures/<album>；iOS：「照片」的相簿）。
+  Future<void> saveToGallery(String src, {String album = galleryAlbum}) =>
+      _ch.invokeMethod('saveToGallery', {'src': src, 'album': album});
+
+  Future<bool> openGallery() async =>
+      await _ch.invokeMethod<bool>('openGallery') ?? false;
+
   Future<bool> openTree(TreeRef t, [String dir = '']) async =>
       await _ch.invokeMethod<bool>('openTree', {'tree': t.uri, 'dir': dir}) ??
       false;
 }
+
+/// 普通模式輸出位置 = 相簿（NormalSettings.outputDir 的特殊值）。
+const galleryOutput = 'gallery:';
+
+/// 沒有相簿權限時 AppError.detail 的代碼
+const galleryDeniedCode = 'gallery_denied';
+
+/// 輸出用的相簿名稱
+const galleryAlbum = 'Image Compressor';
 
 /// 輸出位置的字串表示（BatchSummary / 對話框用）：「tree uri」+「\n」+「相對資料夾」。
 String encodeTreeDir(TreeRef t, String relDir) =>
@@ -178,7 +204,10 @@ String encodeTreeDir(TreeRef t, String relDir) =>
 
 (TreeRef, String)? decodeTreeDir(String s) {
   final parts = s.split('\n');
-  if (parts.length != 3 || !parts[0].startsWith('content://')) return null;
+  if (parts.length != 3 ||
+      !(parts[0].startsWith('content://') || parts[0].startsWith('iosbm:'))) {
+    return null;
+  }
   return (TreeRef(parts[0], parts[1]), parts[2]);
 }
 

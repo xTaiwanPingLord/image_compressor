@@ -988,6 +988,36 @@ abstract class AppLocalizations {
   /// **'指定資料夾'**
   String get customFolder;
 
+  /// No description provided for @openGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'開啟相簿'**
+  String get openGallery;
+
+  /// No description provided for @ecomGalleryAlbums.
+  ///
+  /// In zh, this message translates to:
+  /// **'Shopee、momo 相簿'**
+  String get ecomGalleryAlbums;
+
+  /// No description provided for @saveToGallery.
+  ///
+  /// In zh, this message translates to:
+  /// **'寫入相簿'**
+  String get saveToGallery;
+
+  /// No description provided for @saveToGalleryHelp.
+  ///
+  /// In zh, this message translates to:
+  /// **'存到「{album}」相簿'**
+  String saveToGalleryHelp(String album);
+
+  /// No description provided for @errGalleryDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'沒有相簿權限：請到系統設定允許本 App 存取照片'**
+  String get errGalleryDenied;
+
   /// No description provided for @change.
   ///
   /// In zh, this message translates to:

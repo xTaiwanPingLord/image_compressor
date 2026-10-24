@@ -109,21 +109,62 @@ class _EcommercePageState extends State<EcommercePage> {
   Widget _androidOutput(BuildContext context) {
     final l = context.l;
     final target = s.androidTarget;
-    final fromSource = s.sections.values
-        .expand((x) => x)
-        .any((i) => i.source != null);
+    final gallery = s.outputToGallery;
     return ActionChip(
-      avatar: const Icon(Icons.folder_outlined, size: 18),
-      label: Text(
-        target == null ? l.chooseOutputFolder : l.outputTo(target.name),
+      avatar: Icon(
+        gallery ? Icons.photo_library_outlined : Icons.folder_outlined,
+        size: 18,
       ),
-      onPressed: s.running || fromSource
-          ? null
-          : () async {
-              final t = await AndroidFiles.instance.pickFolder();
-              if (t != null) s.setAndroidOut(t);
-            },
+      label: Text(
+        gallery
+            ? l.outputTo(l.ecomGalleryAlbums)
+            : target == null
+            ? l.chooseOutputFolder
+            : l.outputTo(target.name),
+      ),
+      onPressed: s.running || s.hasFolderSource ? null : _chooseOutput,
     );
+  }
+
+  /// 選輸出位置：資料夾或相簿（可寫入相簿時才詢問）。
+  Future<void> _chooseOutput() async {
+    final af = AndroidFiles.instance;
+    var toGallery = false;
+    if (await af.galleryAvailable()) {
+      if (!mounted) return;
+      final l = context.l;
+      final v = await showModalBottomSheet<bool>(
+        context: context,
+        showDragHandle: true,
+        builder: (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(l.chooseOutputFolder),
+                onTap: () => Navigator.pop(context, false),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(l.saveToGallery),
+                subtitle: Text(l.ecomGalleryAlbums),
+                onTap: () => Navigator.pop(context, true),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      );
+      if (v == null) return;
+      toGallery = v;
+    }
+    if (toGallery) {
+      s.setAndroidGallery();
+      return;
+    }
+    final t = await af.pickFolder();
+    if (t != null) s.setAndroidOut(t);
   }
 
   Widget _toolbar(BuildContext context) {

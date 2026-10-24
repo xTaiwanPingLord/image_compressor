@@ -537,6 +537,24 @@ class NormalState extends ChangeNotifier {
     FileResult r,
     Set<String> dirs,
   ) async {
+    if (settings.outputDir == galleryOutput) {
+      try {
+        await AndroidFiles.instance.saveToGallery(r.output!);
+        t.output = '$galleryAlbum/${p.basename(r.output!)}';
+        dirs.add(galleryOutput);
+      } on PlatformException catch (e) {
+        t
+          ..status = ItemStatus.failed
+          ..newSize = null
+          ..output = null
+          ..error = AppError(
+            kind: ErrorKind.io,
+            // 沒有相簿權限：detail 用固定代碼，errorText 再翻譯
+            detail: e.code == 'denied' ? galleryDeniedCode : (e.message ?? e.code),
+          );
+      }
+      return;
+    }
     final custom = decodeTreeDir(settings.outputDir)?.$1;
     final src = t.source;
     final name = p.basename(r.output!);

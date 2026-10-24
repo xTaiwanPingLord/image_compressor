@@ -92,7 +92,9 @@ class _NormalPageState extends State<NormalPage> {
         action: sum.outputDirs.isEmpty
             ? null
             : SnackBarAction(
-                label: l.openFolder,
+                label: sum.outputDirs.first == galleryOutput
+                    ? l.openGallery
+                    : l.openFolder,
                 onPressed: () => openFolder(sum.outputDirs.first),
               ),
       ),

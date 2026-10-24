@@ -2,9 +2,11 @@ package tw.toast.image_compressor
 
 import android.app.Activity
 import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.ext.SdkExtensions
@@ -122,6 +124,13 @@ class FilesChannel(private val activity: Activity, messenger: BinaryMessenger) :
                     main.post { result.success(uri != null && openDir(uri)) }
                 }
             }
+            "galleryAvailable" -> result.success(Build.VERSION.SDK_INT >= 29)
+            "saveToGallery" -> {
+                val src = File(call.argument<String>("src")!!)
+                val album = call.argument<String>("album") ?: "Image Compressor"
+                background(result) { saveToGallery(src, album) }
+            }
+            "openGallery" -> result.success(openGallery())
             "takeShared" -> {
                 result.success(pendingShared)
                 pendingShared = null
@@ -428,6 +437,39 @@ class FilesChannel(private val activity: Activity, messenger: BinaryMessenger) :
         }
         out.use { o -> src.inputStream().use { it.copyTo(requireNotNull(o), 1 shl 16) } }
         return target.toString()
+    }
+
+    // ---------- gallery ----------
+
+    /** Inserts [src] into MediaStore under Pictures/<album> (Android 10+, no permission needed). */
+    private fun saveToGallery(src: File, album: String): String {
+        if (Build.VERSION.SDK_INT < 29) throw IllegalStateException("requires Android 10")
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, src.name)
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeOf(src.name))
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/$album")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+        val collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val uri = resolver.insert(collection, values)
+            ?: throw IllegalStateException("MediaStore insert failed")
+        try {
+            resolver.openOutputStream(uri, "w").use { o ->
+                src.inputStream().use { it.copyTo(requireNotNull(o), 1 shl 16) }
+            }
+            resolver.update(uri, ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }, null, null)
+        } catch (e: Exception) {
+            resolver.delete(uri, null, null)
+            throw e
+        }
+        return uri.toString()
+    }
+
+    private fun openGallery(): Boolean = try {
+        activity.startActivity(Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_GALLERY))
+        true
+    } catch (_: Exception) {
+        false
     }
 
     private fun openDir(uri: Uri): Boolean {

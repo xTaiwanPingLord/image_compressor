@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 
+import '../platform/android_files.dart' show galleryDeniedCode;
 import '../src/rust/api/common.dart';
 import '../src/rust/api/ecommerce.dart';
 import 'app_localizations.dart';
@@ -51,6 +52,7 @@ String heifUnsupportedText(AppLocalizations l) {
 String errorText(AppLocalizations l, AppError? e) {
   if (e == null) return l.unknownError;
   if (e.kind == ErrorKind.unsupported) return heifUnsupportedText(l);
+  if (e.detail == galleryDeniedCode) return l.errGalleryDenied;
   final kind = errorKindText(l, e.kind);
   return e.detail.isEmpty ? kind : '$kind${l.colonSep}${e.detail}';
 }

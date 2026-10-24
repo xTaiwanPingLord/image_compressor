@@ -429,11 +429,27 @@ class _OutputTab extends StatefulWidget {
   State<_OutputTab> createState() => _OutputTabState();
 }
 
+/// 輸出位置
+enum _Loc { same, custom, gallery }
+
 class _OutputTabState extends State<_OutputTab> {
   late final _suffix = TextEditingController(
     text: widget.state.settings.suffix,
   );
   Timer? _t;
+
+  /// 可寫入相簿（Android 10+ / iOS）
+  bool _gallery = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (AndroidFiles.supported) {
+      AndroidFiles.instance.galleryAvailable().then((v) {
+        if (mounted && v) setState(() => _gallery = true);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -454,7 +470,13 @@ class _OutputTabState extends State<_OutputTab> {
       state.settingsChanged();
     }
 
-    final custom = s.outputDir.trim().isNotEmpty;
+    final gallery = s.outputDir == galleryOutput;
+    final custom = s.outputDir.trim().isNotEmpty && !gallery;
+    final loc = gallery
+        ? _Loc.gallery
+        : custom
+        ? _Loc.custom
+        : _Loc.same;
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
@@ -467,14 +489,17 @@ class _OutputTabState extends State<_OutputTab> {
           }, off ? null : (v) => set(() => s.format = v)),
         ]),
         _Section(l.secLocation, [
-          RadioGroup<bool>(
-            groupValue: custom,
+          RadioGroup<_Loc>(
+            groupValue: loc,
             onChanged: (v) {
               if (off || v == null) return;
-              if (!v) {
-                set(() => s.outputDir = '');
-              } else {
-                _pickDir();
+              switch (v) {
+                case _Loc.same:
+                  set(() => s.outputDir = '');
+                case _Loc.custom:
+                  _pickDir();
+                case _Loc.gallery:
+                  set(() => s.outputDir = galleryOutput);
               }
             },
             child: Column(
@@ -482,15 +507,25 @@ class _OutputTabState extends State<_OutputTab> {
                 RadioListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  value: false,
+                  value: _Loc.same,
                   title: Text(l.sameFolder),
                 ),
                 RadioListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  value: true,
+                  value: _Loc.custom,
                   title: Text(l.customFolder),
                 ),
+                if (_gallery || gallery)
+                  RadioListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    value: _Loc.gallery,
+                    title: Text(l.saveToGallery),
+                    subtitle: gallery
+                        ? Text(l.saveToGalleryHelp(galleryAlbum))
+                        : null,
+                  ),
               ],
             ),
           ),
