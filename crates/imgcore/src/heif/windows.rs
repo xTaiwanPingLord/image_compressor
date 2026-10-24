@@ -75,8 +75,8 @@ unsafe fn decode_inner(data: &[u8]) -> Result<Raw> {
         conv.CopyPixels(std::ptr::null(), w * 4, &mut buf).map_err(map)?;
         Ok(Raw {
             rgba: RgbaImage::from_raw(w, h, buf).expect("size"),
-            // 實測（heif_check）：WIC 會套用 clap 與 irot，但不套用 imir
-            applied: Applied::CropRotate,
+            // 實測（heif_check v2）：WIC 會套用 clap、irot 與 imir
+            applied: Applied::All,
             srgb: false,
         })
     }

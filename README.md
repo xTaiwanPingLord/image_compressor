@@ -25,9 +25,9 @@
 
 不內建 HEVC 解碼器（專利與 LGPL 授權），容器自己解析（`imgcore::heif`：尺寸、clap / irot / imir、ICC、EXIF），像素交給系統：
 
-- Windows：WIC，需安裝「HEIF 影像延伸模組」與「HEVC 視訊延伸模組」；WIC 會套用 clap 與 irot、不套用 imir，也不支援 alpha
+- Windows：WIC，需安裝「HEIF 影像延伸模組」與「HEVC 視訊延伸模組」；WIC 會套用 clap、irot 與 imir，但不支援 alpha
 - Linux：執行時載入系統 libheif（`libheif1` + `libheif-plugin-libde265`）
-- Android：NDK AImageDecoder（Android 11 / API 30 以上），直接轉成 sRGB；實測同 WIC：套用 irot、不套用 imir、不支援 alpha
+- Android：NDK AImageDecoder（Android 11 / API 30 以上），直接轉成 sRGB；實測套用 irot、不套用 imir（由程式補上）、不支援 alpha
 - macOS / iOS：尚未實作（ImageIO，第四階段）
 
 普通模式「與原檔相同」格式時 HEIC 輸出 JPEG。`imgc heif-check` 與設定頁的「HEIC」那行（點一下）可做解碼自我測試。

@@ -444,9 +444,9 @@ pub fn apply_transforms(mut img: DynamicImage, ts: &[Transform]) -> DynamicImage
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(dead_code)]
 pub(crate) enum Applied {
-    /// clap / irot / imir 都已套用（libheif）
+    /// clap / irot / imir 都已套用（libheif、Windows WIC，實測）
     All,
-    /// 只套用 clap 與 irot，未套用 imir（Windows WIC、Android，皆實測）
+    /// 只套用 clap 與 irot，未套用 imir（Android，實測）
     CropRotate,
     /// 都未套用
     None,
